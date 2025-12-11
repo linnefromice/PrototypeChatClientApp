@@ -172,6 +172,19 @@ logs: ## Show app logs in real-time
 	@xcrun simctl spawn $(SIMULATOR_ID) log stream --predicate 'processImagePath contains "$(PROJECT_NAME)"' --color always
 
 # ===================================================
+# OpenAPI Management
+# ===================================================
+
+OPENAPI_URL = https://linnefromice.github.io/prototype-chat-w-hono-drizzle-by-agent/openapi.yaml
+OPENAPI_PATH = Resources/openapi.yaml
+
+fetch-openapi: ## Fetch OpenAPI spec from backend
+	@echo "$(COLOR_INFO)Fetching OpenAPI spec...$(COLOR_RESET)"
+	@mkdir -p Resources
+	@curl -fsSL $(OPENAPI_URL) -o $(OPENAPI_PATH)
+	@echo "$(COLOR_SUCCESS)✓ OpenAPI spec saved to $(OPENAPI_PATH)$(COLOR_RESET)"
+
+# ===================================================
 # Package Management
 # ===================================================
 
