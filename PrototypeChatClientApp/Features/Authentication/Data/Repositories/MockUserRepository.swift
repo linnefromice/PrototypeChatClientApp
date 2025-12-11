@@ -1,5 +1,14 @@
 import Foundation
 
+/// モックユーザーリポジトリ（開発・テスト用）
+///
+/// スコープ: 開発環境での使用を想定
+/// 本番環境では UserRepository（OpenAPI Generated Client使用）に差し替え
+///
+/// 登録済みUser ID:
+/// - user-1 → Alice
+/// - user-2 → Bob
+/// - user-3 → Charlie
 class MockUserRepository: UserRepositoryProtocol {
     private let mockUsers: [User] = [
         User(

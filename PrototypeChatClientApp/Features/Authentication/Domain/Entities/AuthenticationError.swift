@@ -1,5 +1,9 @@
 import Foundation
 
+/// 認証エラー（認証機能に閉じる）
+///
+/// スコープ: Features/Authentication内でのみ使用
+/// 他機能は認証エラーの詳細を知る必要なし（認証済みかどうかのみ）
 enum AuthenticationError: LocalizedError, Equatable {
     case emptyUserId
     case userNotFound

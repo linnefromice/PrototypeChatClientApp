@@ -1,13 +1,23 @@
 import Foundation
 
+/// 認証UseCaseプロトコル
+///
+/// スコープ: Features/Authentication内でのみ使用
 protocol AuthenticationUseCaseProtocol {
     func authenticate(userId: String) async throws -> AuthSession
     func loadSavedSession() -> AuthSession?
     func logout()
 }
 
+/// 認証UseCase実装
+///
+/// 責務:
+/// - User IDのバリデーション
+/// - UserRepositoryを使用してユーザー取得
+/// - AuthSessionの作成と永続化
+/// - セッションの有効性チェック
 class AuthenticationUseCase: AuthenticationUseCaseProtocol {
-    private let userRepository: UserRepositoryProtocol
+    private let userRepository: UserRepositoryProtocol  // Core層のProtocolに依存
     private let sessionManager: AuthSessionManagerProtocol
 
     init(
@@ -24,7 +34,7 @@ class AuthenticationUseCase: AuthenticationUseCaseProtocol {
             throw AuthenticationError.emptyUserId
         }
 
-        // 2. GET /users/{userId} を呼び出し
+        // 2. GET /users/{userId} を呼び出し（Core層のUserRepositoryProtocolを使用）
         let user: User
         do {
             user = try await userRepository.fetchUser(id: userId)
