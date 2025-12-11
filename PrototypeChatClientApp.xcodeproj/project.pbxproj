@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		C16A97D62EEB3B9B0018AE34 /* OpenAPIRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = C16A97D52EEB3B9B0018AE34 /* OpenAPIRuntime */; };
+		C16A97D92EEB3BF40018AE34 /* OpenAPIURLSession in Frameworks */ = {isa = PBXBuildFile; productRef = C16A97D82EEB3BF40018AE34 /* OpenAPIURLSession */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		C16A96062EEADB3E0018AE34 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,6 +57,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C16A97D92EEB3BF40018AE34 /* OpenAPIURLSession in Frameworks */,
+				C16A97D62EEB3B9B0018AE34 /* OpenAPIRuntime in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -106,12 +113,15 @@
 			buildRules = (
 			);
 			dependencies = (
+				C16A97DB2EEB3C1B0018AE34 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				C16A95FA2EEADB3C0018AE34 /* PrototypeChatClientApp */,
 			);
 			name = PrototypeChatClientApp;
 			packageProductDependencies = (
+				C16A97D52EEB3B9B0018AE34 /* OpenAPIRuntime */,
+				C16A97D82EEB3BF40018AE34 /* OpenAPIURLSession */,
 			);
 			productName = PrototypeChatClientApp;
 			productReference = C16A95F82EEADB3C0018AE34 /* PrototypeChatClientApp.app */;
@@ -195,6 +205,11 @@
 			);
 			mainGroup = C16A95EF2EEADB3C0018AE34;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				C16A97D32EEB3B7E0018AE34 /* XCRemoteSwiftPackageReference "swift-openapi-generator" */,
+				C16A97D42EEB3B9B0018AE34 /* XCRemoteSwiftPackageReference "swift-openapi-runtime" */,
+				C16A97D72EEB3BF40018AE34 /* XCRemoteSwiftPackageReference "swift-openapi-urlsession" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C16A95F92EEADB3C0018AE34 /* Products */;
 			projectDirPath = "";
@@ -265,6 +280,10 @@
 			isa = PBXTargetDependency;
 			target = C16A95F72EEADB3C0018AE34 /* PrototypeChatClientApp */;
 			targetProxy = C16A96102EEADB3E0018AE34 /* PBXContainerItemProxy */;
+		};
+		C16A97DB2EEB3C1B0018AE34 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = C16A97DA2EEB3C1B0018AE34 /* OpenAPIGenerator */;
 		};
 /* End PBXTargetDependency section */
 
@@ -550,6 +569,51 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		C16A97D32EEB3B7E0018AE34 /* XCRemoteSwiftPackageReference "swift-openapi-generator" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-openapi-generator";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.10.3;
+			};
+		};
+		C16A97D42EEB3B9B0018AE34 /* XCRemoteSwiftPackageReference "swift-openapi-runtime" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-openapi-runtime";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.9.0;
+			};
+		};
+		C16A97D72EEB3BF40018AE34 /* XCRemoteSwiftPackageReference "swift-openapi-urlsession" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-openapi-urlsession";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.2.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		C16A97D52EEB3B9B0018AE34 /* OpenAPIRuntime */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C16A97D42EEB3B9B0018AE34 /* XCRemoteSwiftPackageReference "swift-openapi-runtime" */;
+			productName = OpenAPIRuntime;
+		};
+		C16A97D82EEB3BF40018AE34 /* OpenAPIURLSession */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C16A97D72EEB3BF40018AE34 /* XCRemoteSwiftPackageReference "swift-openapi-urlsession" */;
+			productName = OpenAPIURLSession;
+		};
+		C16A97DA2EEB3C1B0018AE34 /* OpenAPIGenerator */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C16A97D32EEB3B7E0018AE34 /* XCRemoteSwiftPackageReference "swift-openapi-generator" */;
+			productName = "plugin:OpenAPIGenerator";
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = C16A95F02EEADB3C0018AE34 /* Project object */;
 }
