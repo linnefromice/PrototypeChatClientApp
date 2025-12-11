@@ -80,6 +80,9 @@ iOSInjectionProject/
 # Mac OS
 .DS_Store
 
+# OpenAPI
+PrototypeChatClientApp/openapi.yaml
+
 # OpenAPI Generator
 PrototypeChatClientApp/Infrastructure/Network/Generated/
 
