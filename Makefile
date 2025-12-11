@@ -184,6 +184,11 @@ fetch-openapi: ## Fetch OpenAPI spec from backend
 	@curl -fsSL $(OPENAPI_URL) -o $(OPENAPI_PATH)
 	@echo "$(COLOR_SUCCESS)✓ OpenAPI spec saved to $(OPENAPI_PATH)$(COLOR_RESET)"
 
+generate-api: fetch-openapi ## Fetch OpenAPI spec and generate Swift client code
+	@echo "$(COLOR_INFO)Generating Swift API client code...$(COLOR_RESET)"
+	@echo "$(COLOR_WARNING)Code generation will occur during Xcode build$(COLOR_RESET)"
+	@echo "$(COLOR_INFO)Run 'make build' to trigger code generation$(COLOR_RESET)"
+
 # ===================================================
 # Package Management
 # ===================================================

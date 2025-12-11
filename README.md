@@ -158,6 +158,7 @@ App → Features → Core
 ### 現在の状態
 
 - ✅ Mock実装（開発・テスト用）
+- ✅ OpenAPI Generator環境構築済み
 - ⏳ 本番API接続（未実装）
 
 ### 接続先
@@ -165,10 +166,23 @@ App → Features → Core
 - **開発環境**: `http://localhost:3000` (予定)
 - **本番環境**: `https://prototype-hono-drizzle-backend.linnefromice.workers.dev`
 
-### 本番API接続（今後）
+### OpenAPI Generator セットアップ
 
-OpenAPI Generatorを使用してAPIクライアントを自動生成予定。
-詳細は `Specs/Plans/API_LAYER_DESIGN_20251211_JA.md` を参照。
+Swift OpenAPI Generatorを使用してAPIクライアントを自動生成します。
+
+**初回セットアップ:**
+1. OpenAPI仕様書を取得: `make fetch-openapi`
+2. Xcodeでプロジェクトを開く: `make open`
+3. Swift Package依存を追加（詳細は [OPENAPI_SETUP.md](OPENAPI_SETUP.md) を参照）
+4. ビルド: `make build`
+
+**OpenAPI仕様書の更新:**
+```bash
+make fetch-openapi  # 最新の仕様書を取得
+make build          # コード再生成
+```
+
+詳細な手順は [OPENAPI_SETUP.md](OPENAPI_SETUP.md) を参照してください。
 
 ## 📚 ドキュメント
 
