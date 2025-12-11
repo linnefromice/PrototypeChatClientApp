@@ -147,6 +147,27 @@ Currently using mock repositories. Future implementation will use:
 
 See `Specs/Plans/API_LAYER_DESIGN_20251211_JA.md` for detailed design.
 
+## Implementation Rules
+
+### Critical: Always Build After Code Changes
+
+**IMPORTANT:** After modifying any `*.swift` files, you MUST run `make build` to verify the changes compile successfully.
+
+```bash
+# After editing Swift files
+make build
+
+# If build fails, fix errors before proceeding
+make clean
+make build
+```
+
+This ensures:
+- Code compiles without errors
+- Dependencies are correctly resolved
+- No syntax or type errors are introduced
+- Changes integrate properly with existing code
+
 ## Adding New Features
 
 When implementing a new feature:
@@ -170,6 +191,7 @@ When implementing a new feature:
    - Feature-specific (used by 1 feature only) → `Features/{Name}/Domain/Entities/`
 4. Add dependencies to `App/DependencyContainer.swift`
 5. Register ViewModels as lazy properties in DependencyContainer
+6. **Run `make build` to verify implementation**
 
 ## Testing
 
@@ -257,6 +279,17 @@ make build
 ```
 
 ## Git Workflow
+
+### Git Operations Policy
+
+**CRITICAL:** Do NOT create commits or pull requests unless explicitly requested by the user.
+
+- Only run `git add`, `git commit`, or `git push` when the user specifically asks
+- Only create pull requests when the user explicitly requests it (e.g., `/ai-pr` command)
+- If unclear whether to commit, ask the user first
+- Focus on implementing features and fixes; let the user control when to commit
+
+### Repository Information
 
 - **Main branch:** `main`
 - Build artifacts (`DerivedData/`, `build/`) are gitignored
