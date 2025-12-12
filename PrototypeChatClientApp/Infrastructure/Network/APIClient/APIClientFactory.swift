@@ -10,28 +10,7 @@ class APIClientFactory {
     /// - Parameter environment: Target environment (default: current)
     /// - Returns: Configured OpenAPI Client
     static func createClient(environment: AppEnvironment = .current) -> Client {
-        let configuration = URLSessionConfiguration.default
-        configuration.timeoutIntervalForRequest = 30
-        configuration.timeoutIntervalForResource = 60
-
-        let transport = URLSessionTransport(configuration: configuration)
-
-        return Client(
-            serverURL: environment.baseURL,
-            transport: transport
-        )
-    }
-
-    /// Creates a Client with custom URLSessionConfiguration
-    /// - Parameters:
-    ///   - environment: Target environment
-    ///   - configuration: Custom URLSession configuration
-    /// - Returns: Configured OpenAPI Client
-    static func createClient(
-        environment: AppEnvironment,
-        configuration: URLSessionConfiguration
-    ) -> Client {
-        let transport = URLSessionTransport(configuration: configuration)
+        let transport = URLSessionTransport()
 
         return Client(
             serverURL: environment.baseURL,

@@ -12,12 +12,12 @@ class AuthenticationViewModel: ObservableObject {
 
     // MARK: - Dependencies
     private let authenticationUseCase: AuthenticationUseCaseProtocol
-    private let sessionManager: AuthSessionManager
+    private let sessionManager: AuthSessionManagerProtocol
 
     // MARK: - Initialization
     init(
         authenticationUseCase: AuthenticationUseCaseProtocol,
-        sessionManager: AuthSessionManager = AuthSessionManager()
+        sessionManager: AuthSessionManagerProtocol
     ) {
         self.authenticationUseCase = authenticationUseCase
         self.sessionManager = sessionManager
