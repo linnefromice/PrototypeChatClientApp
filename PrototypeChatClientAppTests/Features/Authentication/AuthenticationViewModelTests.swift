@@ -179,27 +179,52 @@ final class AuthenticationViewModelTests: XCTestCase {
     func testLoadLastUserId_ReturnsLastUserId() {
         // Given
         let lastUserId = "last-user-id"
-        UserDefaults.standard.set(lastUserId, forKey: StorageKey.lastUserId)
+        mockSessionManager.lastUserId = lastUserId
 
         // When
         let result = sut.loadLastUserId()
 
         // Then
         XCTAssertEqual(result, lastUserId)
-
-        // Cleanup
-        UserDefaults.standard.removeObject(forKey: StorageKey.lastUserId)
     }
 
     func testLoadLastUserId_NoLastUserId_ReturnsNil() {
         // Given
-        UserDefaults.standard.removeObject(forKey: StorageKey.lastUserId)
+        mockSessionManager.lastUserId = nil
 
         // When
         let result = sut.loadLastUserId()
 
         // Then
         XCTAssertNil(result)
+    }
+}
+
+// MARK: - Mock AuthSessionManager
+
+class MockAuthSessionManager: AuthSessionManagerProtocol {
+    var savedSession: AuthSession?
+    var shouldThrowError: Error?
+    var lastUserId: String?
+
+    func saveSession(_ session: AuthSession) throws {
+        if let error = shouldThrowError {
+            throw error
+        }
+        savedSession = session
+        lastUserId = session.userId
+    }
+
+    func loadSession() -> AuthSession? {
+        return savedSession
+    }
+
+    func clearSession() {
+        savedSession = nil
+    }
+
+    func getLastUserId() -> String? {
+        return lastUserId
     }
 }
 
