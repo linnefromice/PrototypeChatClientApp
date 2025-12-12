@@ -17,10 +17,19 @@ enum AppEnvironment {
 
     /// 現在の環境を取得
     static var current: AppEnvironment {
-        #if DEBUG
-        return .development
-        #else
+        // 環境変数 USE_PRODUCTION_API が設定されている場合は本番環境を使用
+        if ProcessInfo.processInfo.environment["USE_PRODUCTION_API"] != nil {
+            return .production
+        }
+        
         return .production
-        #endif
+
+//        #if DEBUG
+//        // DEBUGビルドでもlocalhostが起動していない場合は本番環境を使用
+//        // TODO: より良い方法として、Settings.bundleでユーザーが切り替えられるようにする
+//        return .development
+//        #else
+//        return .production
+//        #endif
     }
 }
