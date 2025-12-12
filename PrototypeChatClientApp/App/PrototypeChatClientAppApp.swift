@@ -15,6 +15,7 @@ struct PrototypeChatClientAppApp: App {
         WindowGroup {
             RootView()
                 .environmentObject(container.authenticationViewModel)
+                .environmentObject(container)
                 .onAppear {
                     container.authenticationViewModel.checkAuthentication()
                 }

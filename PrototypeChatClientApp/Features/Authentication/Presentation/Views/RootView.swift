@@ -20,29 +20,30 @@ struct RootView: View {
 }
 
 // MARK: - Preview
-#Preview("未認証") {
-    let container = DependencyContainer.makePreviewContainer()
-    RootView()
-        .environmentObject(container.authenticationViewModel)
-}
+struct RootView_Previews: PreviewProvider {
+    static var previews: some View {
+        Group {
+            // 未認証
+            let unauthContainer = DependencyContainer.makePreviewContainer()
+            RootView()
+                .environmentObject(unauthContainer.authenticationViewModel)
+                .environmentObject(unauthContainer)
+                .previewDisplayName("未認証")
 
-#Preview("認証済み") {
-    AuthenticatedRootViewPreview()
-}
+            // 認証済み
+            let authContainer = DependencyContainer.makePreviewContainer()
+            let authViewModel = authContainer.authenticationViewModel
+            authViewModel.isAuthenticated = true
+            authViewModel.currentSession = AuthSession(
+                userId: "user-1",
+                user: User(id: "user-1", name: "Alice", avatarUrl: nil, createdAt: Date()),
+                authenticatedAt: Date()
+            )
 
-private struct AuthenticatedRootViewPreview: View {
-    @StateObject private var container = DependencyContainer.makePreviewContainer()
-
-    var body: some View {
-        let viewModel = container.authenticationViewModel
-        viewModel.isAuthenticated = true
-        viewModel.currentSession = AuthSession(
-            userId: "user-1",
-            user: User(id: "user-1", name: "Alice", avatarUrl: nil, createdAt: Date()),
-            authenticatedAt: Date()
-        )
-
-        return RootView()
-            .environmentObject(viewModel)
+            return RootView()
+                .environmentObject(authViewModel)
+                .environmentObject(authContainer)
+                .previewDisplayName("認証済み")
+        }
     }
 }
