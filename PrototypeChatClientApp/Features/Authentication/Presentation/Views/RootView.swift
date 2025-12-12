@@ -21,32 +21,28 @@ struct RootView: View {
 
 // MARK: - Preview
 #Preview("未認証") {
+    let container = DependencyContainer.makePreviewContainer()
     RootView()
-        .environmentObject(
-            AuthenticationViewModel(
-                authenticationUseCase: AuthenticationUseCase(
-                    userRepository: MockUserRepository(),
-                    sessionManager: AuthSessionManager(userDefaults: UserDefaults(suiteName: "preview")!)
-                )
-            )
-        )
+        .environmentObject(container.authenticationViewModel)
 }
 
 #Preview("認証済み") {
-    let viewModel = AuthenticationViewModel(
-        authenticationUseCase: AuthenticationUseCase(
-            userRepository: MockUserRepository(),
-            sessionManager: AuthSessionManager(userDefaults: UserDefaults(suiteName: "preview")!)
-        )
-    )
-    // 認証済み状態をシミュレート
-    viewModel.isAuthenticated = true
-    viewModel.currentSession = AuthSession(
-        userId: "user-1",
-        user: User(id: "user-1", name: "Alice", avatarUrl: nil, createdAt: Date()),
-        authenticatedAt: Date()
-    )
+    AuthenticatedRootViewPreview()
+}
 
-    return RootView()
-        .environmentObject(viewModel)
+private struct AuthenticatedRootViewPreview: View {
+    @StateObject private var container = DependencyContainer.makePreviewContainer()
+
+    var body: some View {
+        let viewModel = container.authenticationViewModel
+        viewModel.isAuthenticated = true
+        viewModel.currentSession = AuthSession(
+            userId: "user-1",
+            user: User(id: "user-1", name: "Alice", avatarUrl: nil, createdAt: Date()),
+            authenticatedAt: Date()
+        )
+
+        return RootView()
+            .environmentObject(viewModel)
+    }
 }

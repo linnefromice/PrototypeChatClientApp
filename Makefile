@@ -172,6 +172,27 @@ logs: ## Show app logs in real-time
 	@xcrun simctl spawn $(SIMULATOR_ID) log stream --predicate 'processImagePath contains "$(PROJECT_NAME)"' --color always
 
 # ===================================================
+# OpenAPI Management
+# ===================================================
+
+OPENAPI_URL = https://linnefromice.github.io/prototype-chat-w-hono-drizzle-by-agent/openapi.yaml
+OPENAPI_PATH = PrototypeChatClientApp/openapi.yaml
+OPENAPI_BACKUP_PATH = Resources/openapi.yaml
+
+fetch-openapi: ## Fetch OpenAPI spec from backend
+	@echo "$(COLOR_INFO)Fetching OpenAPI spec...$(COLOR_RESET)"
+	@mkdir -p Resources
+	@curl -fsSL $(OPENAPI_URL) -o $(OPENAPI_PATH)
+	@cp $(OPENAPI_PATH) $(OPENAPI_BACKUP_PATH)
+	@echo "$(COLOR_SUCCESS)✓ OpenAPI spec saved to $(OPENAPI_PATH)$(COLOR_RESET)"
+	@echo "$(COLOR_INFO)Backup saved to $(OPENAPI_BACKUP_PATH)$(COLOR_RESET)"
+
+generate-api: fetch-openapi ## Fetch OpenAPI spec and generate Swift client code
+	@echo "$(COLOR_INFO)Generating Swift API client code...$(COLOR_RESET)"
+	@echo "$(COLOR_WARNING)Code generation will occur during Xcode build$(COLOR_RESET)"
+	@echo "$(COLOR_INFO)Run 'make build' to trigger code generation$(COLOR_RESET)"
+
+# ===================================================
 # Package Management
 # ===================================================
 

@@ -1,0 +1,9 @@
+generate:
+  - types    # Generate schema types
+  - client   # Generate client
+
+accessModifier: internal
+
+# Additional configuration
+additionalImports:
+  - Foundation

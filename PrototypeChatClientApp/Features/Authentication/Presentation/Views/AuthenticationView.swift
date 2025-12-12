@@ -1,11 +1,28 @@
 import SwiftUI
 
+// MARK: - Container (Dependency Injection)
+
+/// AuthenticationView Container
+/// Responsible for dependency injection and ViewModel creation
 struct AuthenticationView: View {
     @StateObject private var viewModel: AuthenticationViewModel
 
     init(viewModel: AuthenticationViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
     }
+
+    var body: some View {
+        AuthenticationPresenter(viewModel: viewModel)
+    }
+}
+
+// MARK: - Presenter (UI Logic)
+
+/// AuthenticationPresenter
+/// Responsible for UI presentation only (no dependency management)
+/// This separation enables easy SwiftUI Previews without complex DI setup
+struct AuthenticationPresenter: View {
+    @ObservedObject var viewModel: AuthenticationViewModel
 
     var body: some View {
         NavigationStack {
@@ -117,48 +134,31 @@ struct AuthenticationView: View {
 }
 
 // MARK: - Preview
+
 #Preview("初期状態") {
-    AuthenticationView(
-        viewModel: AuthenticationViewModel(
-            authenticationUseCase: AuthenticationUseCase(
-                userRepository: MockUserRepository(),
-                sessionManager: AuthSessionManager(userDefaults: UserDefaults(suiteName: "preview")!)
-            )
-        )
-    )
+    let container = DependencyContainer.makePreviewContainer()
+    return AuthenticationPresenter(viewModel: container.authenticationViewModel)
 }
 
 #Preview("User ID入力済み") {
-    let viewModel = AuthenticationViewModel(
-        authenticationUseCase: AuthenticationUseCase(
-            userRepository: MockUserRepository(),
-            sessionManager: AuthSessionManager(userDefaults: UserDefaults(suiteName: "preview")!)
-        )
-    )
+    let container = DependencyContainer.makePreviewContainer()
+    let viewModel = container.authenticationViewModel
     viewModel.userId = "user-1"
-    return AuthenticationView(viewModel: viewModel)
+    return AuthenticationPresenter(viewModel: viewModel)
 }
 
 #Preview("エラー表示") {
-    let viewModel = AuthenticationViewModel(
-        authenticationUseCase: AuthenticationUseCase(
-            userRepository: MockUserRepository(),
-            sessionManager: AuthSessionManager(userDefaults: UserDefaults(suiteName: "preview")!)
-        )
-    )
+    let container = DependencyContainer.makePreviewContainer()
+    let viewModel = container.authenticationViewModel
     viewModel.userId = "invalid-user"
     viewModel.errorMessage = "指定されたUser IDが見つかりません"
-    return AuthenticationView(viewModel: viewModel)
+    return AuthenticationPresenter(viewModel: viewModel)
 }
 
 #Preview("認証中") {
-    let viewModel = AuthenticationViewModel(
-        authenticationUseCase: AuthenticationUseCase(
-            userRepository: MockUserRepository(),
-            sessionManager: AuthSessionManager(userDefaults: UserDefaults(suiteName: "preview")!)
-        )
-    )
+    let container = DependencyContainer.makePreviewContainer()
+    let viewModel = container.authenticationViewModel
     viewModel.userId = "user-1"
     viewModel.isAuthenticating = true
-    return AuthenticationView(viewModel: viewModel)
+    return AuthenticationPresenter(viewModel: viewModel)
 }

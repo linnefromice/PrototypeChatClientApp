@@ -114,30 +114,59 @@ targets: [
 
 ```
 PrototypeChatClientApp/
-├── openapi.yaml                    # OpenAPI仕様書 (バックエンドから取得)
-├── openapi-generator-config.yaml  # ジェネレーター設定
+├── PrototypeChatClientApp/
+│   ├── openapi.yaml                          # OpenAPI仕様書 (ターゲットディレクトリ)
+│   ├── openapi-generator-config.yaml        # ジェネレーター設定
+│   │
+│   └── Infrastructure/
+│       └── Network/
+│           ├── APIClient/
+│           │   ├── APIClientFactory.swift   # Client生成ファクトリ (手動実装)
+│           │   └── AppEnvironment.swift     # 環境設定 (手動実装)
+│           │
+│           ├── Error/
+│           │   └── NetworkError.swift       # エラー定義 (手動実装)
+│           │
+│           ├── DTOs/                        # DTO拡張 (手動実装)
+│           │   ├── UserDTO+Mapping.swift
+│           │   ├── ConversationDTO+Mapping.swift
+│           │   └── MessageDTO+Mapping.swift
+│           │
+│           └── Repositories/                # Repository実装 (手動実装)
+│               ├── UserRepository.swift
+│               ├── ConversationRepository.swift
+│               └── MessageRepository.swift
 │
-├── Data/
-│   ├── Generated/                 # 自動生成コード (gitignore推奨)
-│   │   ├── Client.swift
-│   │   ├── Types.swift
-│   │   └── Operations.swift
-│   │
-│   ├── Network/
-│   │   ├── APIClientFactory.swift      # Client生成ファクトリ
-│   │   ├── AppEnvironment.swift        # 環境設定
-│   │   └── NetworkErrorMapper.swift    # エラー変換
-│   │
-│   ├── Repositories/              # Repository実装 (手動)
-│   │   ├── UserRepository.swift
-│   │   ├── ConversationRepository.swift
-│   │   └── MessageRepository.swift
-│   │
-│   └── DTOs/                      # DTO拡張 (手動)
-│       ├── UserDTO+Mapping.swift
-│       ├── ConversationDTO+Mapping.swift
-│       └── MessageDTO+Mapping.swift
+├── DerivedData/                              # Xcode生成物 (gitignore)
+│   └── Build/Intermediates.noindex/
+│       └── BuildToolPluginIntermediates/
+│           └── PrototypeChatClientApp.output/
+│               └── PrototypeChatClientApp/
+│                   └── OpenAPIGenerator/
+│                       └── GeneratedSources/  # 自動生成コード (Build Plugin)
+│                           ├── Client.swift   # APIクライアント
+│                           └── Types.swift    # スキーマ型定義
+│
+└── Resources/
+    └── openapi.yaml                          # OpenAPI仕様書バックアップ
 ```
+
+**設計のポイント:**
+
+1. **生成コードの配置**: DerivedData内に自動生成（Apple推奨アプローチ）
+   - ビルド時に自動的に生成
+   - gitには含めない
+   - openapi.yaml更新時に自動的に再生成
+
+2. **手動実装コードの配置**: Infrastructure/Network配下に整理
+   - APIClient/: Client初期化とファクトリ
+   - Error/: 共通エラー定義
+   - DTOs/: Domain Entity変換ロジック
+   - Repositories/: Repository実装
+
+3. **OpenAPI仕様書の管理**:
+   - PrototypeChatClientApp/openapi.yaml: Build Plugin用（gitignore）
+   - Resources/openapi.yaml: バックアップとして保存（git管理）
 
 ### 3.3 ジェネレーター設定
 
@@ -741,13 +770,26 @@ graph LR
 ### 8.2 コード生成の確認
 
 ```bash
-# Xcodeビルド時に自動実行されるが、手動確認も可能
-swift package plugin generate-openapi \
-  --target PrototypeChatClientApp
+# Build Plugin はXcodeビルド時に自動実行される
+make build
 
 # 生成されたファイルの確認
-ls -la .build/plugins/outputs/PrototypeChatClientApp/OpenAPIGenerator/
+find DerivedData/Build/Intermediates.noindex/ \
+  -name "*.swift" \
+  -path "*/OpenAPIGenerator/GeneratedSources/*"
+
+# 生成コードの内容確認
+find DerivedData/Build/Intermediates.noindex/ \
+  -name "Client.swift" \
+  -path "*/OpenAPIGenerator/GeneratedSources/*" \
+  -exec head -20 {} \;
 ```
+
+**注意事項:**
+
+- 生成コードはビルド成果物としてDerivedDataに配置される
+- Xcodeがインデックスを自動的に認識し、コード補完やナビゲーションに利用可能
+- `make clean` を実行すると生成コードも削除されるため、再ビルドが必要
 
 ### 8.3 CI/CD統合
 

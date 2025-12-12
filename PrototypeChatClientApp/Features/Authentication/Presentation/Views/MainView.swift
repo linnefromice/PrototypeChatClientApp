@@ -72,19 +72,22 @@ struct MainView: View {
 
 // MARK: - Preview
 #Preview {
-    let viewModel = AuthenticationViewModel(
-        authenticationUseCase: AuthenticationUseCase(
-            userRepository: MockUserRepository(),
-            sessionManager: AuthSessionManager(userDefaults: UserDefaults(suiteName: "preview")!)
-        )
-    )
-    viewModel.isAuthenticated = true
-    viewModel.currentSession = AuthSession(
-        userId: "user-1",
-        user: User(id: "user-1", name: "Alice", avatarUrl: nil, createdAt: Date()),
-        authenticatedAt: Date()
-    )
+    MainViewPreview()
+}
 
-    return MainView()
-        .environmentObject(viewModel)
+private struct MainViewPreview: View {
+    @StateObject private var container = DependencyContainer.makePreviewContainer()
+
+    var body: some View {
+        let viewModel = container.authenticationViewModel
+        viewModel.isAuthenticated = true
+        viewModel.currentSession = AuthSession(
+            userId: "user-1",
+            user: User(id: "user-1", name: "Alice", avatarUrl: nil, createdAt: Date()),
+            authenticatedAt: Date()
+        )
+
+        return MainView()
+            .environmentObject(viewModel)
+    }
 }
