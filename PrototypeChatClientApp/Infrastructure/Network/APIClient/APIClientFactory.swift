@@ -12,9 +12,18 @@ class APIClientFactory {
     static func createClient(environment: AppEnvironment = .current) -> Client {
         let transport = URLSessionTransport()
 
+        #if DEBUG
+        // DEBUGビルドではログ出力を有効化
+        return Client(
+            serverURL: environment.baseURL,
+            transport: transport,
+            middlewares: [LoggingMiddleware()]
+        )
+        #else
         return Client(
             serverURL: environment.baseURL,
             transport: transport
         )
+        #endif
     }
 }
