@@ -160,4 +160,77 @@ enum MockData {
         olderConversationDetail,
         newerConversationDetail
     ]
+
+    // MARK: - Messages
+
+    static let sampleMessages: [Message] = [
+        Message(
+            id: "msg-1",
+            conversationId: "c1",
+            senderUserId: "user1",
+            type: .text,
+            text: "こんにちは！元気ですか？",
+            createdAt: Date().addingTimeInterval(-3600),
+            replyToMessageId: nil,
+            systemEvent: nil
+        ),
+        Message(
+            id: "msg-2",
+            conversationId: "c1",
+            senderUserId: "user2",
+            type: .text,
+            text: "はい、元気です！ありがとうございます。",
+            createdAt: Date().addingTimeInterval(-3000),
+            replyToMessageId: nil,
+            systemEvent: nil
+        ),
+        Message(
+            id: "msg-3",
+            conversationId: "c1",
+            senderUserId: "user1",
+            type: .text,
+            text: "今日は良い天気ですね",
+            createdAt: Date().addingTimeInterval(-2400),
+            replyToMessageId: nil,
+            systemEvent: nil
+        ),
+        Message(
+            id: "msg-4",
+            conversationId: "c1",
+            senderUserId: "user2",
+            type: .text,
+            text: "本当ですね！散歩に行こうかな",
+            createdAt: Date().addingTimeInterval(-1800),
+            replyToMessageId: nil,
+            systemEvent: nil
+        ),
+        Message(
+            id: "msg-5",
+            conversationId: "c1",
+            senderUserId: "user1",
+            type: .text,
+            text: "いいですね！楽しんでください",
+            createdAt: Date().addingTimeInterval(-1200),
+            replyToMessageId: nil,
+            systemEvent: nil
+        )
+    ]
+
+    static func makeSampleMessages(for conversationId: String, count: Int = 5) -> [Message] {
+        let users = ["user1", "user2"]
+        let baseTime = Date().addingTimeInterval(-3600)
+
+        return (0..<count).map { index in
+            Message(
+                id: "msg-\(index)",
+                conversationId: conversationId,
+                senderUserId: users[index % users.count],
+                type: .text,
+                text: "Sample message \(index + 1)",
+                createdAt: baseTime.addingTimeInterval(Double(index * 600)),
+                replyToMessageId: nil,
+                systemEvent: nil
+            )
+        }
+    }
 }
