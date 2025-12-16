@@ -48,11 +48,11 @@ struct AuthenticationPresenter: View {
                 // 入力フォーム
                 VStack(spacing: 16) {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("User ID")
+                        Text("ユーザー名")
                             .font(.subheadline)
                             .fontWeight(.medium)
 
-                        TextField("User IDを入力", text: $viewModel.userId)
+                        TextField("ユーザー名を入力（例: alice, bob）", text: $viewModel.idAlias)
                             .textFieldStyle(.roundedBorder)
                             .textInputAutocapitalization(.never)
                             .autocorrectionDisabled()
@@ -64,7 +64,7 @@ struct AuthenticationPresenter: View {
                             }
 
                         // ヘルプテキスト
-                        Text("バックエンドに登録済みのUser IDを入力してください")
+                        Text("登録済みのユーザー名を入力してください")
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
@@ -104,7 +104,7 @@ struct AuthenticationPresenter: View {
                         .foregroundColor(.white)
                         .cornerRadius(10)
                     }
-                    .disabled(viewModel.userId.isEmpty || viewModel.isAuthenticating)
+                    .disabled(viewModel.idAlias.isEmpty || viewModel.isAuthenticating)
                 }
                 .padding(.horizontal, 32)
 
@@ -117,12 +117,9 @@ struct AuthenticationPresenter: View {
                         .font(.caption2)
                         .foregroundColor(.secondary)
 
-                    if let lastUserId = viewModel.loadLastUserId() {
-                        Button("前回のID: \(lastUserId)") {
-                            viewModel.userId = lastUserId
-                        }
-                        .font(.caption)
-                    }
+                    Text("テストユーザー: alice, bob, charlie")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
                 }
                 .padding(.bottom, 16)
                 #endif
@@ -140,25 +137,25 @@ struct AuthenticationPresenter: View {
     return AuthenticationPresenter(viewModel: container.authenticationViewModel)
 }
 
-#Preview("User ID入力済み") {
+#Preview("ID Alias入力済み") {
     let container = DependencyContainer.makePreviewContainer()
     let viewModel = container.authenticationViewModel
-    viewModel.userId = "user-1"
+    viewModel.idAlias = "alice"
     return AuthenticationPresenter(viewModel: viewModel)
 }
 
 #Preview("エラー表示") {
     let container = DependencyContainer.makePreviewContainer()
     let viewModel = container.authenticationViewModel
-    viewModel.userId = "invalid-user"
-    viewModel.errorMessage = "指定されたUser IDが見つかりません"
+    viewModel.idAlias = "invalid-user"
+    viewModel.errorMessage = "指定されたユーザーが見つかりません"
     return AuthenticationPresenter(viewModel: viewModel)
 }
 
 #Preview("認証中") {
     let container = DependencyContainer.makePreviewContainer()
     let viewModel = container.authenticationViewModel
-    viewModel.userId = "user-1"
+    viewModel.idAlias = "alice"
     viewModel.isAuthenticating = true
     return AuthenticationPresenter(viewModel: viewModel)
 }

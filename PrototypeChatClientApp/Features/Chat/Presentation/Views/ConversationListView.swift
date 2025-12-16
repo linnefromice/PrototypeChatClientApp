@@ -151,7 +151,7 @@ struct ConversationListView_Previews: PreviewProvider {
                         conversationId: "1",
                         userId: "user1",
                         role: .member,
-                        user: User(id: "user1", name: "Alice", avatarUrl: nil, createdAt: Date()),
+                        user: User(id: "user1", idAlias: "alice", name: "Alice", avatarUrl: nil, createdAt: Date()),
                         joinedAt: Date(),
                         leftAt: nil
                     ),
@@ -160,7 +160,7 @@ struct ConversationListView_Previews: PreviewProvider {
                         conversationId: "1",
                         userId: "user2",
                         role: .member,
-                        user: User(id: "user2", name: "Bob", avatarUrl: nil, createdAt: Date()),
+                        user: User(id: "user2", idAlias: "bob", name: "Bob", avatarUrl: nil, createdAt: Date()),
                         joinedAt: Date(),
                         leftAt: nil
                     )
@@ -177,7 +177,7 @@ struct ConversationListView_Previews: PreviewProvider {
         authViewModel.isAuthenticated = true
         authViewModel.currentSession = AuthSession(
             userId: "user1",
-            user: User(id: "user1", name: "Alice", avatarUrl: nil, createdAt: Date()),
+            user: User(id: "user1", idAlias: "alice", name: "Alice", avatarUrl: nil, createdAt: Date()),
             authenticatedAt: Date()
         )
 

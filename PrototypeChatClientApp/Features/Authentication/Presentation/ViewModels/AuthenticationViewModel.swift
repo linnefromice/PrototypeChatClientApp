@@ -4,7 +4,7 @@ import Combine
 @MainActor
 class AuthenticationViewModel: ObservableObject {
     // MARK: - Published Properties
-    @Published var userId: String = ""
+    @Published var idAlias: String = ""
     @Published var currentSession: AuthSession?
     @Published var isAuthenticating: Bool = false
     @Published var errorMessage: String?
@@ -30,14 +30,15 @@ class AuthenticationViewModel: ObservableObject {
         if let session = authenticationUseCase.loadSavedSession() {
             self.currentSession = session
             self.isAuthenticated = true
-            self.userId = session.userId
+            // セッションから idAlias を表示（後方互換性のため）
+            self.idAlias = session.user.idAlias
         }
     }
 
-    /// ユーザーIDによる認証実行
+    /// ID Aliasによる認証実行
     func authenticate() async {
-        guard !userId.isEmpty else {
-            errorMessage = "User IDを入力してください"
+        guard !idAlias.isEmpty else {
+            errorMessage = "ID Aliasを入力してください"
             return
         }
 
@@ -45,7 +46,7 @@ class AuthenticationViewModel: ObservableObject {
         errorMessage = nil
 
         do {
-            let session = try await authenticationUseCase.authenticate(userId: userId)
+            let session = try await authenticationUseCase.authenticate(idAlias: idAlias)
             self.currentSession = session
             self.isAuthenticated = true
         } catch let error as AuthenticationError {
@@ -64,10 +65,10 @@ class AuthenticationViewModel: ObservableObject {
         authenticationUseCase.logout()
         currentSession = nil
         isAuthenticated = false
-        userId = ""
+        idAlias = ""
     }
 
-    /// 最後に使用したUser IDを取得
+    /// 最後に使用したUser IDを取得（後方互換性のため維持）
     func loadLastUserId() -> String? {
         return sessionManager.getLastUserId()
     }

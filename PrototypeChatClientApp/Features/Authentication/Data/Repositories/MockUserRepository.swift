@@ -6,25 +6,28 @@ import Foundation
 /// 本番環境では UserRepository（OpenAPI Generated Client使用）に差し替え
 ///
 /// 登録済みUser ID:
-/// - user-1 → Alice
-/// - user-2 → Bob
-/// - user-3 → Charlie
+/// - user-1 (alice) → Alice
+/// - user-2 (bob) → Bob
+/// - user-3 (charlie) → Charlie
 class MockUserRepository: UserRepositoryProtocol {
     private let mockUsers: [User] = [
         User(
             id: "user-1",
+            idAlias: "alice",
             name: "Alice",
             avatarUrl: nil,
             createdAt: Date()
         ),
         User(
             id: "user-2",
+            idAlias: "bob",
             name: "Bob",
             avatarUrl: nil,
             createdAt: Date()
         ),
         User(
             id: "user-3",
+            idAlias: "charlie",
             name: "Charlie",
             avatarUrl: nil,
             createdAt: Date()
@@ -74,11 +77,29 @@ class MockUserRepository: UserRepositoryProtocol {
             ])
         }
 
+        let uuid = UUID().uuidString
         return User(
-            id: "user-\(UUID().uuidString)",
+            id: "user-\(uuid)",
+            idAlias: "user\(uuid.prefix(8))",
             name: name,
             avatarUrl: avatarUrl,
             createdAt: Date()
         )
+    }
+
+    func loginByIdAlias(_ idAlias: String) async throws -> User {
+        try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+
+        if shouldFail {
+            throw NSError(domain: "MockError", code: 404, userInfo: [
+                NSLocalizedDescriptionKey: "User not found"
+            ])
+        }
+
+        guard let user = mockUsers.first(where: { $0.idAlias == idAlias }) else {
+            throw NetworkError.notFound
+        }
+
+        return user
     }
 }

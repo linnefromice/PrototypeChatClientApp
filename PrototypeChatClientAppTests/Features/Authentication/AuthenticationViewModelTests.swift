@@ -31,7 +31,7 @@ final class AuthenticationViewModelTests: XCTestCase {
 
     func testCheckAuthentication_ExistingSession_SetsAuthenticated() {
         // Given
-        let user = User(id: "user-1", name: "Test User", avatarUrl: nil, createdAt: Date())
+        let user = User(id: "user-1", idAlias: "alice", name: "Test User", avatarUrl: nil, createdAt: Date())
         let expectedSession = AuthSession(
             userId: "user-1",
             user: user,
@@ -46,7 +46,7 @@ final class AuthenticationViewModelTests: XCTestCase {
         XCTAssertTrue(sut.isAuthenticated)
         XCTAssertNotNil(sut.currentSession)
         XCTAssertEqual(sut.currentSession?.userId, "user-1")
-        XCTAssertEqual(sut.userId, "user-1")
+        XCTAssertEqual(sut.idAlias, "alice")
     }
 
     func testCheckAuthentication_NoSession_RemainsUnauthenticated() {
@@ -65,14 +65,14 @@ final class AuthenticationViewModelTests: XCTestCase {
 
     func testAuthenticate_Success() async throws {
         // Given
-        let expectedUser = User(id: "user-1", name: "Test User", avatarUrl: nil, createdAt: Date())
+        let expectedUser = User(id: "user-1", idAlias: "alice", name: "Test User", avatarUrl: nil, createdAt: Date())
         let expectedSession = AuthSession(
             userId: "user-1",
             user: expectedUser,
             authenticatedAt: Date()
         )
         mockUseCase.mockSession = expectedSession
-        sut.userId = "user-1"
+        sut.idAlias = "alice"
 
         // When
         await sut.authenticate()
@@ -87,7 +87,7 @@ final class AuthenticationViewModelTests: XCTestCase {
 
     func testAuthenticate_EmptyUserId_ShowsError() async throws {
         // Given
-        sut.userId = ""
+        sut.idAlias = ""
 
         // When
         await sut.authenticate()
@@ -95,14 +95,14 @@ final class AuthenticationViewModelTests: XCTestCase {
         // Then
         XCTAssertFalse(sut.isAuthenticated)
         XCTAssertNotNil(sut.errorMessage)
-        XCTAssertEqual(sut.errorMessage, "User IDを入力してください")
+        XCTAssertEqual(sut.errorMessage, "ID Aliasを入力してください")
         XCTAssertFalse(sut.isAuthenticating)
     }
 
     func testAuthenticate_AuthenticationError_ShowsErrorMessage() async throws {
         // Given
         mockUseCase.shouldThrowError = AuthenticationError.userNotFound
-        sut.userId = "invalid-user"
+        sut.idAlias = "invalid-user"
 
         // When
         await sut.authenticate()
@@ -118,7 +118,7 @@ final class AuthenticationViewModelTests: XCTestCase {
         // Given
         struct TestError: Error {}
         mockUseCase.shouldThrowError = TestError()
-        sut.userId = "user-1"
+        sut.idAlias = "alice"
 
         // When
         await sut.authenticate()
@@ -131,7 +131,7 @@ final class AuthenticationViewModelTests: XCTestCase {
 
     func testAuthenticate_SetsAuthenticatingState() async throws {
         // Given
-        let expectedUser = User(id: "user-1", name: "Test User", avatarUrl: nil, createdAt: Date())
+        let expectedUser = User(id: "user-1", idAlias: "alice", name: "Test User", avatarUrl: nil, createdAt: Date())
         let expectedSession = AuthSession(
             userId: "user-1",
             user: expectedUser,
@@ -139,7 +139,7 @@ final class AuthenticationViewModelTests: XCTestCase {
         )
         mockUseCase.mockSession = expectedSession
         mockUseCase.delayInSeconds = 0.1 // Add delay to test isAuthenticating state
-        sut.userId = "user-1"
+        sut.idAlias = "alice"
 
         // When
         Task {
@@ -155,7 +155,7 @@ final class AuthenticationViewModelTests: XCTestCase {
 
     func testLogout_ClearsSession() {
         // Given
-        let user = User(id: "user-1", name: "Test User", avatarUrl: nil, createdAt: Date())
+        let user = User(id: "user-1", idAlias: "alice", name: "Test User", avatarUrl: nil, createdAt: Date())
         let session = AuthSession(
             userId: "user-1",
             user: user,
@@ -163,7 +163,7 @@ final class AuthenticationViewModelTests: XCTestCase {
         )
         sut.currentSession = session
         sut.isAuthenticated = true
-        sut.userId = "user-1"
+        sut.idAlias = "alice"
 
         // When
         sut.logout()
@@ -171,7 +171,7 @@ final class AuthenticationViewModelTests: XCTestCase {
         // Then
         XCTAssertFalse(sut.isAuthenticated)
         XCTAssertNil(sut.currentSession)
-        XCTAssertEqual(sut.userId, "")
+        XCTAssertEqual(sut.idAlias, "")
     }
 
     // MARK: - LoadLastUserId Tests
@@ -235,7 +235,7 @@ class MockAuthenticationUseCase: AuthenticationUseCaseProtocol {
     var shouldThrowError: Error?
     var delayInSeconds: Double = 0
 
-    func authenticate(userId: String) async throws -> AuthSession {
+    func authenticate(idAlias: String) async throws -> AuthSession {
         if delayInSeconds > 0 {
             try await Task.sleep(nanoseconds: UInt64(delayInSeconds * 1_000_000_000))
         }
@@ -248,9 +248,11 @@ class MockAuthenticationUseCase: AuthenticationUseCaseProtocol {
             return session
         }
 
-        // Default mock session
+        // Default mock session - map idAlias to user ID
+        let userId = "user-1"
         let user = User(
             id: userId,
+            idAlias: idAlias,
             name: "Mock User",
             avatarUrl: nil,
             createdAt: Date()
