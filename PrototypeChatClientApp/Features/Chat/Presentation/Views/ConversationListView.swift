@@ -41,8 +41,14 @@ struct ConversationListView: View {
                 }
             )
             .sheet(isPresented: $showCreateConversation) {
-                // チャット作成画面は後で実装
-                Text("チャット作成画面（未実装）")
+                CreateConversationView(
+                    viewModel: makeCreateConversationViewModel(),
+                    onConversationCreated: { _ in
+                        Task {
+                            await viewModel.loadConversations()
+                        }
+                    }
+                )
             }
             .alert(isPresented: $viewModel.showError) {
                 Alert(
@@ -83,6 +89,15 @@ struct ConversationListView: View {
         }
         .padding(.vertical, 4)
     }
+
+    private func makeCreateConversationViewModel() -> CreateConversationViewModel {
+        let container = DependencyContainer.shared
+        return CreateConversationViewModel(
+            conversationUseCase: container.conversationUseCase,
+            userListUseCase: container.userListUseCase,
+            currentUserId: viewModel.currentUserId
+        )
+    }
 }
 
 struct ConversationListView_Previews: PreviewProvider {
@@ -101,6 +116,7 @@ struct ConversationListView_Previews: PreviewProvider {
                         id: "p1",
                         conversationId: "1",
                         userId: "user1",
+                        role: .member,
                         user: User(id: "user1", name: "Alice", avatarUrl: nil, createdAt: Date()),
                         joinedAt: Date(),
                         leftAt: nil
@@ -109,6 +125,7 @@ struct ConversationListView_Previews: PreviewProvider {
                         id: "p2",
                         conversationId: "1",
                         userId: "user2",
+                        role: .member,
                         user: User(id: "user2", name: "Bob", avatarUrl: nil, createdAt: Date()),
                         joinedAt: Date(),
                         leftAt: nil

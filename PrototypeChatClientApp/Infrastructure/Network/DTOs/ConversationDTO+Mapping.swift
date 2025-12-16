@@ -28,23 +28,6 @@ extension Components.Schemas.Conversation {
 
 extension Array where Element == Components.Schemas.Participant {
     func toDomain() async throws -> [Participant] {
-        // 各ParticipantのuserIdからUserを取得する必要がある
-        // ただし、現在はConversationDetail取得時にユーザー情報が含まれていないため、
-        // 一旦簡易的な実装とする（後で改善）
-        return self.map { participantDTO in
-            Participant(
-                id: participantDTO.id,
-                conversationId: participantDTO.conversationId,
-                userId: participantDTO.userId,
-                user: User(
-                    id: participantDTO.userId,
-                    name: "User \(participantDTO.userId)",  // 仮の名前
-                    avatarUrl: nil,
-                    createdAt: participantDTO.joinedAt
-                ),
-                joinedAt: participantDTO.joinedAt,
-                leftAt: participantDTO.leftAt
-            )
-        }
+        return self.map { $0.toDomain() }
     }
 }

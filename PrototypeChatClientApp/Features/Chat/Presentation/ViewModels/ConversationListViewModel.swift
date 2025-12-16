@@ -5,7 +5,7 @@ import Combine
 class ConversationListViewModel: ObservableObject {
     // MARK: - Properties
     private let conversationUseCase: ConversationUseCase
-    private let currentUserId: String
+    let currentUserId: String
 
     @Published var conversations: [ConversationDetail] = []
     @Published var isLoading: Bool = false

@@ -40,6 +40,7 @@ final class ConversationDetailTests: XCTestCase {
             id: "p1",
             conversationId: "c1",
             userId: "u1",
+            role: .member,
             user: MockData.user1,
             joinedAt: Date(),
             leftAt: Date()
@@ -48,6 +49,7 @@ final class ConversationDetailTests: XCTestCase {
             id: "p2",
             conversationId: "c1",
             userId: "u2",
+            role: .member,
             user: MockData.user2,
             joinedAt: Date(),
             leftAt: Date()
@@ -74,6 +76,7 @@ final class ConversationDetailTests: XCTestCase {
             id: "p4",
             conversationId: "c1",
             userId: "u4",
+            role: .member,
             user: MockData.user3,
             joinedAt: Date(),
             leftAt: Date()
