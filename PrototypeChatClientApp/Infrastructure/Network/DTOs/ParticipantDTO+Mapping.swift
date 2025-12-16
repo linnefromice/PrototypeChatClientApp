@@ -2,15 +2,14 @@ import Foundation
 import OpenAPIRuntime
 
 /// OpenAPI DTO → Domain Entity マッピング
-/// 注意: Participantにはuserフィールドがないため、userIdのみ持っている
-/// 実際のUser情報は別途取得が必要
 extension Components.Schemas.Participant {
-    func toDomainWithUser(_ user: User) -> Participant {
+    func toDomain() -> Participant {
         Participant(
             id: id,
             conversationId: conversationId,
             userId: userId,
-            user: user,
+            role: ParticipantRole(rawValue: role.rawValue) ?? .member,
+            user: user.toDomain(),
             joinedAt: joinedAt,
             leftAt: leftAt
         )

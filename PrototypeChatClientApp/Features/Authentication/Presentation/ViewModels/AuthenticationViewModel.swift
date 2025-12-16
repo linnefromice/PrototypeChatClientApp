@@ -49,8 +49,10 @@ class AuthenticationViewModel: ObservableObject {
             self.currentSession = session
             self.isAuthenticated = true
         } catch let error as AuthenticationError {
+            print("❌ [AuthenticationViewModel] authenticate failed - AuthenticationError: \(error)")
             errorMessage = error.errorDescription
         } catch {
+            print("❌ [AuthenticationViewModel] authenticate failed - Unexpected error: \(error)")
             errorMessage = "認証に失敗しました: \(error.localizedDescription)"
         }
 

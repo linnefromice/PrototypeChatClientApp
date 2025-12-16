@@ -14,18 +14,28 @@ class ConversationRepository: ConversationRepositoryProtocol {
             query: .init(userId: userId)
         )
 
-        let response = try await client.get_sol_conversations(input)
+        do {
+            let response = try await client.get_sol_conversations(input)
 
-        switch response {
-        case .ok(let okResponse):
-            let conversationDTOs = try okResponse.body.json
-            var result: [ConversationDetail] = []
-            for dto in conversationDTOs {
-                result.append(try await dto.toDomain())
+            switch response {
+            case .ok(let okResponse):
+                let conversationDTOs = try okResponse.body.json
+                var result: [ConversationDetail] = []
+                for dto in conversationDTOs {
+                    result.append(try await dto.toDomain())
+                }
+                return result
+            case .undocumented(statusCode: let code, _):
+                let error = NetworkError.from(statusCode: code)
+                print("❌ [ConversationRepository] fetchConversations failed - Status: \(code), Error: \(error)")
+                throw error
             }
-            return result
-        case .undocumented(statusCode: let code, _):
-            throw NetworkError.from(statusCode: code)
+        } catch let error as NetworkError {
+            print("❌ [ConversationRepository] fetchConversations failed - NetworkError: \(error)")
+            throw error
+        } catch {
+            print("❌ [ConversationRepository] fetchConversations failed - Unexpected error: \(error)")
+            throw error
         }
     }
 
@@ -48,14 +58,24 @@ class ConversationRepository: ConversationRepositoryProtocol {
             )
         )
 
-        let response = try await client.post_sol_conversations(input)
+        do {
+            let response = try await client.post_sol_conversations(input)
 
-        switch response {
-        case .created(let createdResponse):
-            let conversationDTO = try createdResponse.body.json
-            return try await conversationDTO.toDomain()
-        case .undocumented(statusCode: let code, _):
-            throw NetworkError.from(statusCode: code)
+            switch response {
+            case .created(let createdResponse):
+                let conversationDTO = try createdResponse.body.json
+                return try await conversationDTO.toDomain()
+            case .undocumented(statusCode: let code, _):
+                let error = NetworkError.from(statusCode: code)
+                print("❌ [ConversationRepository] createConversation failed - Status: \(code), Error: \(error)")
+                throw error
+            }
+        } catch let error as NetworkError {
+            print("❌ [ConversationRepository] createConversation failed - NetworkError: \(error)")
+            throw error
+        } catch {
+            print("❌ [ConversationRepository] createConversation failed - Unexpected error: \(error)")
+            throw error
         }
     }
 }

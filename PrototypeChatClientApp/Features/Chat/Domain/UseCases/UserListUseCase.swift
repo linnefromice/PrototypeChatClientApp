@@ -13,9 +13,7 @@ class UserListUseCase {
     /// - Parameter currentUserId: 現在のユーザーID
     /// - Returns: ユーザーリスト（自分を除く）
     func fetchAvailableUsers(excludingUserId currentUserId: String) async throws -> [User] {
-        // TODO: Backend APIで全ユーザー取得エンドポイントが実装されたら置き換える
-        // 現在は仮実装として空配列を返す
-        // 将来的には userRepository.fetchAllUsers() のような実装が必要
-        return []
+        let allUsers = try await userRepository.fetchUsers()
+        return allUsers.filter { $0.id != currentUserId }
     }
 }

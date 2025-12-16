@@ -11,6 +11,7 @@ final class ParticipantTests: XCTestCase {
             id: "p1",
             conversationId: "c1",
             userId: "u1",
+            role: .member,
             user: MockData.user1,
             joinedAt: Date(),
             leftAt: nil
@@ -26,6 +27,7 @@ final class ParticipantTests: XCTestCase {
             id: "p1",
             conversationId: "c1",
             userId: "u1",
+            role: .member,
             user: MockData.user1,
             joinedAt: Date(),
             leftAt: Date()
@@ -42,6 +44,7 @@ final class ParticipantTests: XCTestCase {
             id: "p1",
             conversationId: "c1",
             userId: "u1",
+            role: .member,
             user: MockData.user1,
             joinedAt: Date(timeIntervalSince1970: 500),
             leftAt: pastDate
@@ -60,6 +63,7 @@ final class ParticipantTests: XCTestCase {
             id: "p1",
             conversationId: "c1",
             userId: "user1",
+            role: .member,
             user: MockData.user1,
             joinedAt: participant1.joinedAt,
             leftAt: nil
@@ -76,6 +80,7 @@ final class ParticipantTests: XCTestCase {
             id: "p999", // Different ID
             conversationId: "c1",
             userId: "user1",
+            role: .member,
             user: MockData.user1,
             joinedAt: participant1.joinedAt,
             leftAt: nil

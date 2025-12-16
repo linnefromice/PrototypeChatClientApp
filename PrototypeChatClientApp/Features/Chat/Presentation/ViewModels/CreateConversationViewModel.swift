@@ -37,8 +37,19 @@ class CreateConversationViewModel: ObservableObject {
         do {
             availableUsers = try await userListUseCase.fetchAvailableUsers(excludingUserId: currentUserId)
         } catch {
-            errorMessage = "ユーザー一覧の取得に失敗しました: \(error.localizedDescription)"
-            showError = true
+            // Check if the error is a cancellation error (URLError -999)
+            if let urlError = error as? URLError, urlError.code == .cancelled {
+                print("ℹ️ [CreateConversationViewModel] loadAvailableUsers cancelled")
+                // Don't show error to user for cancellation
+            } else if (error as NSError).code == NSURLErrorCancelled {
+                print("ℹ️ [CreateConversationViewModel] loadAvailableUsers cancelled")
+                // Don't show error to user for cancellation
+            } else {
+                let message = "ユーザー一覧の取得に失敗しました: \(error.localizedDescription)"
+                print("❌ [CreateConversationViewModel] loadAvailableUsers failed - \(error)")
+                errorMessage = message
+                showError = true
+            }
         }
 
         isLoading = false
@@ -63,8 +74,19 @@ class CreateConversationViewModel: ObservableObject {
                 targetUserId: targetUserId
             )
         } catch {
-            errorMessage = "チャットの作成に失敗しました: \(error.localizedDescription)"
-            showError = true
+            // Check if the error is a cancellation error (URLError -999)
+            if let urlError = error as? URLError, urlError.code == .cancelled {
+                print("ℹ️ [CreateConversationViewModel] createDirectConversation cancelled")
+                // Don't show error to user for cancellation
+            } else if (error as NSError).code == NSURLErrorCancelled {
+                print("ℹ️ [CreateConversationViewModel] createDirectConversation cancelled")
+                // Don't show error to user for cancellation
+            } else {
+                let message = "チャットの作成に失敗しました: \(error.localizedDescription)"
+                print("❌ [CreateConversationViewModel] createDirectConversation failed - \(error)")
+                errorMessage = message
+                showError = true
+            }
         }
 
         isLoading = false

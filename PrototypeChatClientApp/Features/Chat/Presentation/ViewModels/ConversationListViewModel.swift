@@ -5,7 +5,7 @@ import Combine
 class ConversationListViewModel: ObservableObject {
     // MARK: - Properties
     private let conversationUseCase: ConversationUseCase
-    private let currentUserId: String
+    let currentUserId: String
 
     @Published var conversations: [ConversationDetail] = []
     @Published var isLoading: Bool = false
@@ -32,8 +32,19 @@ class ConversationListViewModel: ObservableObject {
         do {
             conversations = try await conversationUseCase.fetchConversations(userId: currentUserId)
         } catch {
-            errorMessage = "会話一覧の取得に失敗しました: \(error.localizedDescription)"
-            showError = true
+            // Check if the error is a cancellation error (URLError -999)
+            if let urlError = error as? URLError, urlError.code == .cancelled {
+                print("ℹ️ [ConversationListViewModel] loadConversations cancelled - This is normal during refresh")
+                // Don't show error to user for cancellation
+            } else if (error as NSError).code == NSURLErrorCancelled {
+                print("ℹ️ [ConversationListViewModel] loadConversations cancelled - This is normal during refresh")
+                // Don't show error to user for cancellation
+            } else {
+                let message = "会話一覧の取得に失敗しました: \(error.localizedDescription)"
+                print("❌ [ConversationListViewModel] loadConversations failed - \(error)")
+                errorMessage = message
+                showError = true
+            }
         }
 
         isLoading = false

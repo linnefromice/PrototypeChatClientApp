@@ -33,6 +33,7 @@ enum MockData {
         id: String = "p1",
         conversationId: String = "c1",
         userId: String = "user1",
+        role: ParticipantRole = .member,
         user: User? = nil,
         joinedAt: Date = Date(timeIntervalSince1970: 1000),
         leftAt: Date? = nil
@@ -41,6 +42,7 @@ enum MockData {
             id: id,
             conversationId: conversationId,
             userId: userId,
+            role: role,
             user: user ?? user1,
             joinedAt: joinedAt,
             leftAt: leftAt

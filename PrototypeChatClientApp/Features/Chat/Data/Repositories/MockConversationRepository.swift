@@ -36,6 +36,7 @@ class MockConversationRepository: ConversationRepositoryProtocol {
                     id: UUID().uuidString,
                     conversationId: UUID().uuidString,
                     userId: userId,
+                    role: .member,
                     user: User(
                         id: userId,
                         name: "User \(userId)",

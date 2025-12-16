@@ -3,7 +3,10 @@ import SwiftUI
 /// 会話一覧画面
 struct ConversationListView: View {
     @StateObject private var viewModel: ConversationListViewModel
+    @EnvironmentObject var authViewModel: AuthenticationViewModel
     @State private var showCreateConversation = false
+    @State private var showMenu = false
+    @State private var showLogoutConfirmation = false
 
     init(viewModel: ConversationListViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -33,16 +36,34 @@ struct ConversationListView: View {
             }
             .navigationTitle("チャット")
             .navigationBarTitleDisplayMode(.large)
-            .navigationBarItems(trailing:
-                Button(action: {
+            .navigationBarItems(
+                leading: Button(action: {
+                    showMenu = true
+                }) {
+                    Image(systemName: "line.3.horizontal")
+                        .imageScale(.large)
+                }
+                .accessibilityLabel("メニュー"),
+                trailing: Button(action: {
                     showCreateConversation = true
                 }) {
                     Image(systemName: "plus")
                 }
             )
             .sheet(isPresented: $showCreateConversation) {
-                // チャット作成画面は後で実装
-                Text("チャット作成画面（未実装）")
+                CreateConversationView(
+                    viewModel: makeCreateConversationViewModel(),
+                    onConversationCreated: { _ in
+                        Task {
+                            await viewModel.loadConversations()
+                        }
+                    }
+                )
+            }
+            .sheet(isPresented: $showMenu) {
+                NavigationMenuView(onLogout: {
+                    showLogoutConfirmation = true
+                })
             }
             .alert(isPresented: $viewModel.showError) {
                 Alert(
@@ -50,6 +71,14 @@ struct ConversationListView: View {
                     message: Text(viewModel.errorMessage ?? "不明なエラー"),
                     dismissButton: .default(Text("OK"))
                 )
+            }
+            .alert("ログアウト", isPresented: $showLogoutConfirmation) {
+                Button("キャンセル", role: .cancel) { }
+                Button("ログアウト", role: .destructive) {
+                    authViewModel.logout()
+                }
+            } message: {
+                Text("ログアウトしますか？")
             }
             .task {
                 await viewModel.loadConversations()
@@ -83,6 +112,15 @@ struct ConversationListView: View {
         }
         .padding(.vertical, 4)
     }
+
+    private func makeCreateConversationViewModel() -> CreateConversationViewModel {
+        let container = DependencyContainer.shared
+        return CreateConversationViewModel(
+            conversationUseCase: container.conversationUseCase,
+            userListUseCase: container.userListUseCase,
+            currentUserId: viewModel.currentUserId
+        )
+    }
 }
 
 struct ConversationListView_Previews: PreviewProvider {
@@ -101,6 +139,7 @@ struct ConversationListView_Previews: PreviewProvider {
                         id: "p1",
                         conversationId: "1",
                         userId: "user1",
+                        role: .member,
                         user: User(id: "user1", name: "Alice", avatarUrl: nil, createdAt: Date()),
                         joinedAt: Date(),
                         leftAt: nil
@@ -109,6 +148,7 @@ struct ConversationListView_Previews: PreviewProvider {
                         id: "p2",
                         conversationId: "1",
                         userId: "user2",
+                        role: .member,
                         user: User(id: "user2", name: "Bob", avatarUrl: nil, createdAt: Date()),
                         joinedAt: Date(),
                         leftAt: nil
@@ -120,6 +160,17 @@ struct ConversationListView_Previews: PreviewProvider {
         let useCase = ConversationUseCase(conversationRepository: mockRepository)
         let viewModel = ConversationListViewModel(conversationUseCase: useCase, currentUserId: "user1")
 
+        // Add mock auth view model
+        let container = DependencyContainer.makePreviewContainer()
+        let authViewModel = container.authenticationViewModel
+        authViewModel.isAuthenticated = true
+        authViewModel.currentSession = AuthSession(
+            userId: "user1",
+            user: User(id: "user1", name: "Alice", avatarUrl: nil, createdAt: Date()),
+            authenticatedAt: Date()
+        )
+
         return ConversationListView(viewModel: viewModel)
+            .environmentObject(authViewModel)
     }
 }
