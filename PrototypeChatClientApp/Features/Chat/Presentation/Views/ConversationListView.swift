@@ -90,8 +90,10 @@ struct ConversationListView: View {
     private var conversationList: some View {
         List(viewModel.conversations) { detail in
             NavigationLink {
-                // チャット詳細画面は後で実装
-                Text("チャット詳細画面（未実装）")
+                ChatRoomView(
+                    viewModel: makeChatRoomViewModel(for: detail),
+                    conversationDetail: detail
+                )
             } label: {
                 conversationRow(for: detail)
             }
@@ -118,6 +120,15 @@ struct ConversationListView: View {
         return CreateConversationViewModel(
             conversationUseCase: container.conversationUseCase,
             userListUseCase: container.userListUseCase,
+            currentUserId: viewModel.currentUserId
+        )
+    }
+
+    private func makeChatRoomViewModel(for detail: ConversationDetail) -> ChatRoomViewModel {
+        let container = DependencyContainer.shared
+        return ChatRoomViewModel(
+            messageUseCase: container.messageUseCase,
+            conversationId: detail.id,
             currentUserId: viewModel.currentUserId
         )
     }

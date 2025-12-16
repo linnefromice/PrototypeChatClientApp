@@ -34,6 +34,9 @@ final class DependencyContainer: ObservableObject {
     /// 会話リポジトリ（実装版・Mock版を切り替え可能）
     var conversationRepository: ConversationRepositoryProtocol
 
+    /// メッセージリポジトリ（実装版・Mock版を切り替え可能）
+    var messageRepository: MessageRepositoryProtocol
+
     /// 認証セッションマネージャー
     var authSessionManager: AuthSessionManagerProtocol
 
@@ -57,6 +60,11 @@ final class DependencyContainer: ObservableObject {
         UserListUseCase(userRepository: userRepository)
     }()
 
+    /// メッセージUseCase
+    lazy var messageUseCase: MessageUseCase = {
+        MessageUseCase(messageRepository: messageRepository)
+    }()
+
     // MARK: - View Models
 
     /// 認証ViewModel（lazy初期化）
@@ -77,6 +85,7 @@ final class DependencyContainer: ObservableObject {
         environment: AppEnvironment = .current,
         userRepository: UserRepositoryProtocol? = nil,
         conversationRepository: ConversationRepositoryProtocol? = nil,
+        messageRepository: MessageRepositoryProtocol? = nil,
         authSessionManager: AuthSessionManagerProtocol? = nil
     ) {
         self.environment = environment
@@ -96,6 +105,12 @@ final class DependencyContainer: ObservableObject {
             self.conversationRepository = ConversationRepository(client: client)
         }
 
+        if let mockMessageRepository = messageRepository {
+            self.messageRepository = mockMessageRepository
+        } else {
+            self.messageRepository = MessageRepository(client: client)
+        }
+
         self.authSessionManager = authSessionManager ?? AuthSessionManager()
     }
 
@@ -105,16 +120,19 @@ final class DependencyContainer: ObservableObject {
     static func makeTestContainer(
         userRepository: UserRepositoryProtocol? = nil,
         conversationRepository: ConversationRepositoryProtocol? = nil,
+        messageRepository: MessageRepositoryProtocol? = nil,
         authSessionManager: AuthSessionManagerProtocol? = nil
     ) -> DependencyContainer {
         let mockUserRepo = userRepository ?? MockUserRepository()
         let mockConversationRepo = conversationRepository ?? MockConversationRepository()
+        let mockMessageRepo = messageRepository ?? MockMessageRepository()
         let mockSessionManager = authSessionManager ?? MockAuthSessionManager()
 
         return DependencyContainer(
             environment: .development,
             userRepository: mockUserRepo,
             conversationRepository: mockConversationRepo,
+            messageRepository: mockMessageRepo,
             authSessionManager: mockSessionManager
         )
     }
@@ -125,11 +143,13 @@ final class DependencyContainer: ObservableObject {
         // MockUserRepository has predefined users (user-1, user-2, user-3)
 
         let mockConversationRepository = MockConversationRepository()
+        let mockMessageRepository = MockMessageRepository()
         let mockSessionManager = MockAuthSessionManager()
 
         return makeTestContainer(
             userRepository: mockUserRepository,
             conversationRepository: mockConversationRepository,
+            messageRepository: mockMessageRepository,
             authSessionManager: mockSessionManager
         )
     }
