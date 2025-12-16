@@ -32,10 +32,19 @@ class ConversationListViewModel: ObservableObject {
         do {
             conversations = try await conversationUseCase.fetchConversations(userId: currentUserId)
         } catch {
-            let message = "会話一覧の取得に失敗しました: \(error.localizedDescription)"
-            print("❌ [ConversationListViewModel] loadConversations failed - \(error)")
-            errorMessage = message
-            showError = true
+            // Check if the error is a cancellation error (URLError -999)
+            if let urlError = error as? URLError, urlError.code == .cancelled {
+                print("ℹ️ [ConversationListViewModel] loadConversations cancelled - This is normal during refresh")
+                // Don't show error to user for cancellation
+            } else if (error as NSError).code == NSURLErrorCancelled {
+                print("ℹ️ [ConversationListViewModel] loadConversations cancelled - This is normal during refresh")
+                // Don't show error to user for cancellation
+            } else {
+                let message = "会話一覧の取得に失敗しました: \(error.localizedDescription)"
+                print("❌ [ConversationListViewModel] loadConversations failed - \(error)")
+                errorMessage = message
+                showError = true
+            }
         }
 
         isLoading = false
