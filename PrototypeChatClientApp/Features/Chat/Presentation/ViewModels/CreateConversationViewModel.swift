@@ -37,7 +37,9 @@ class CreateConversationViewModel: ObservableObject {
         do {
             availableUsers = try await userListUseCase.fetchAvailableUsers(excludingUserId: currentUserId)
         } catch {
-            errorMessage = "ユーザー一覧の取得に失敗しました: \(error.localizedDescription)"
+            let message = "ユーザー一覧の取得に失敗しました: \(error.localizedDescription)"
+            print("❌ [CreateConversationViewModel] loadAvailableUsers failed - \(error)")
+            errorMessage = message
             showError = true
         }
 
@@ -63,7 +65,9 @@ class CreateConversationViewModel: ObservableObject {
                 targetUserId: targetUserId
             )
         } catch {
-            errorMessage = "チャットの作成に失敗しました: \(error.localizedDescription)"
+            let message = "チャットの作成に失敗しました: \(error.localizedDescription)"
+            print("❌ [CreateConversationViewModel] createDirectConversation failed - \(error)")
+            errorMessage = message
             showError = true
         }
 

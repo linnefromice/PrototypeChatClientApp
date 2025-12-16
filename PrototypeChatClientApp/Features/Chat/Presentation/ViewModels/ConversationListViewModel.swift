@@ -32,7 +32,9 @@ class ConversationListViewModel: ObservableObject {
         do {
             conversations = try await conversationUseCase.fetchConversations(userId: currentUserId)
         } catch {
-            errorMessage = "会話一覧の取得に失敗しました: \(error.localizedDescription)"
+            let message = "会話一覧の取得に失敗しました: \(error.localizedDescription)"
+            print("❌ [ConversationListViewModel] loadConversations failed - \(error)")
+            errorMessage = message
             showError = true
         }
 
