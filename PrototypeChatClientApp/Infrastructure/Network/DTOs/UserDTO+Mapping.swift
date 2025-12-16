@@ -10,6 +10,7 @@ extension Components.Schemas.User {
     func toDomain() -> User {
         User(
             id: id,
+            idAlias: idAlias,
             name: name,
             avatarUrl: avatarUrl,
             createdAt: createdAt

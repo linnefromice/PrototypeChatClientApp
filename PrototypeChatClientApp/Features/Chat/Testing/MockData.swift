@@ -6,6 +6,7 @@ enum MockData {
 
     static let user1 = User(
         id: "user1",
+        idAlias: "alice",
         name: "Alice",
         avatarUrl: nil,
         createdAt: Date(timeIntervalSince1970: 1000)
@@ -13,6 +14,7 @@ enum MockData {
 
     static let user2 = User(
         id: "user2",
+        idAlias: "bob",
         name: "Bob",
         avatarUrl: nil,
         createdAt: Date(timeIntervalSince1970: 1000)
@@ -20,6 +22,7 @@ enum MockData {
 
     static let user3 = User(
         id: "user3",
+        idAlias: "charlie",
         name: "Charlie",
         avatarUrl: nil,
         createdAt: Date(timeIntervalSince1970: 1000)

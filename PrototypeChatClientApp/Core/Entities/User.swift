@@ -9,6 +9,7 @@ import Foundation
 /// - メッセージ機能（送信者として使用）
 struct User: Codable, Identifiable, Equatable {
     let id: String
+    let idAlias: String
     let name: String
     let avatarUrl: String?
     let createdAt: Date

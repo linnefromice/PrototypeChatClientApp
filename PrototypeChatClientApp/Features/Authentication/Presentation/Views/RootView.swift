@@ -36,7 +36,7 @@ struct RootView_Previews: PreviewProvider {
             authViewModel.isAuthenticated = true
             authViewModel.currentSession = AuthSession(
                 userId: "user-1",
-                user: User(id: "user-1", name: "Alice", avatarUrl: nil, createdAt: Date()),
+                user: User(id: "user-1", idAlias: "alice", name: "Alice", avatarUrl: nil, createdAt: Date()),
                 authenticatedAt: Date()
             )
 

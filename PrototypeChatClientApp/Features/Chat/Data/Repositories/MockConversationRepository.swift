@@ -39,6 +39,7 @@ class MockConversationRepository: ConversationRepositoryProtocol {
                     role: .member,
                     user: User(
                         id: userId,
+                        idAlias: "user\(userId)",
                         name: "User \(userId)",
                         avatarUrl: nil,
                         createdAt: Date()

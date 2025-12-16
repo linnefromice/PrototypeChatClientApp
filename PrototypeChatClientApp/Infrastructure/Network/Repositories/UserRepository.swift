@@ -98,6 +98,39 @@ class UserRepository: UserRepositoryProtocol {
             throw error
         }
     }
+
+    func loginByIdAlias(_ idAlias: String) async throws -> User {
+        let input = Operations.post_sol_users_sol_login.Input(
+            body: .json(
+                Components.Schemas.LoginRequest(idAlias: idAlias)
+            )
+        )
+
+        do {
+            let response = try await client.post_sol_users_sol_login(input)
+
+            switch response {
+            case .ok(let okResponse):
+                let userDTO = try okResponse.body.json
+                return userDTO.toDomain()
+            case .badRequest:
+                print("❌ [UserRepository] loginByIdAlias failed - Invalid idAlias format: \(idAlias)")
+                throw NetworkError.validationError(message: "Invalid ID Alias format")
+            case .notFound:
+                print("❌ [UserRepository] loginByIdAlias failed - User not found: \(idAlias)")
+                throw NetworkError.notFound
+            case .undocumented(statusCode: let code, _):
+                let error = NetworkError.from(statusCode: code)
+                print("❌ [UserRepository] loginByIdAlias failed - Status: \(code)")
+                throw error
+            }
+        } catch let error as NetworkError {
+            throw error
+        } catch {
+            print("❌ [UserRepository] loginByIdAlias failed - Unexpected: \(error)")
+            throw error
+        }
+    }
 }
 
 // Note: MockUserRepository is defined in Features/Authentication/Data/Repositories/MockUserRepository.swift
