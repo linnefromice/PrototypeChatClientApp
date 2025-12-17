@@ -3,11 +3,23 @@ import SwiftUI
 /// ナビゲーションメニュービュー
 struct NavigationMenuView: View {
     @Environment(\.dismiss) var dismiss
+    @EnvironmentObject var authViewModel: AuthenticationViewModel
     let onLogout: () -> Void
 
     var body: some View {
         NavigationView {
             List {
+                // Account menu item
+                if let user = authViewModel.currentSession?.user {
+                    NavigationLink {
+                        AccountProfileView(user: user)
+                    } label: {
+                        Label("アカウント", systemImage: "person.circle")
+                    }
+                    .accessibilityLabel("アカウント")
+                }
+
+                // Logout button
                 Button(role: .destructive, action: {
                     dismiss()
                     onLogout()
@@ -26,7 +38,17 @@ struct NavigationMenuView: View {
 }
 
 #Preview {
-    NavigationMenuView(onLogout: {
+    let container = DependencyContainer.makePreviewContainer()
+    let viewModel = container.authenticationViewModel
+    viewModel.isAuthenticated = true
+    viewModel.currentSession = AuthSession(
+        userId: "user-1",
+        user: User(id: "user-1", idAlias: "alice", name: "Alice", avatarUrl: nil, createdAt: Date()),
+        authenticatedAt: Date()
+    )
+
+    return NavigationMenuView(onLogout: {
         print("Logout tapped")
     })
+    .environmentObject(viewModel)
 }
