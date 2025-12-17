@@ -4,6 +4,10 @@ struct MessageBubbleView: View {
     let message: Message
     let isOwnMessage: Bool
     let senderName: String?
+    let reactions: [ReactionSummary]?
+    let currentUserId: String?
+    let onReactionTap: ((String) -> Void)?
+    let onAddReaction: ((String) -> Void)?
 
     var body: some View {
         HStack {
@@ -24,6 +28,23 @@ struct MessageBubbleView: View {
                     .background(isOwnMessage ? Color.blue : Color(.systemGray5))
                     .foregroundColor(isOwnMessage ? .white : .primary)
                     .cornerRadius(16)
+                    .contextMenu {
+                        if let onAddReaction = onAddReaction {
+                            ReactionPickerView(onSelect: { emoji in
+                                onAddReaction(emoji)
+                            })
+                        }
+                    }
+
+                if let reactions = reactions, !reactions.isEmpty,
+                   let currentUserId = currentUserId,
+                   let onReactionTap = onReactionTap {
+                    ReactionSummaryView(
+                        summaries: reactions,
+                        currentUserId: currentUserId,
+                        onTap: onReactionTap
+                    )
+                }
 
                 Text(formattedTime)
                     .font(.caption2)
@@ -60,7 +81,14 @@ struct MessageBubbleView: View {
                 systemEvent: nil
             ),
             isOwnMessage: true,
-            senderName: nil
+            senderName: nil,
+            reactions: [
+                ReactionSummary(emoji: "👍", count: 2, userIds: ["user-1", "user-3"]),
+                ReactionSummary(emoji: "❤️", count: 1, userIds: ["user-2"])
+            ],
+            currentUserId: "user-1",
+            onReactionTap: { emoji in print("Tapped: \(emoji)") },
+            onAddReaction: { emoji in print("Added: \(emoji)") }
         )
 
         MessageBubbleView(
@@ -75,7 +103,11 @@ struct MessageBubbleView: View {
                 systemEvent: nil
             ),
             isOwnMessage: false,
-            senderName: "Bob"
+            senderName: "Bob",
+            reactions: nil,
+            currentUserId: "user-1",
+            onReactionTap: nil,
+            onAddReaction: nil
         )
     }
 }

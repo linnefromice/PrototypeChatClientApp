@@ -128,6 +128,7 @@ struct ConversationListView: View {
         let container = DependencyContainer.shared
         return ChatRoomViewModel(
             messageUseCase: container.messageUseCase,
+            reactionUseCase: container.reactionUseCase,
             conversationId: detail.id,
             currentUserId: viewModel.currentUserId
         )
