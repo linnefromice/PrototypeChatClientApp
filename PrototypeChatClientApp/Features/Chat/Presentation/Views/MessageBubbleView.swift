@@ -9,6 +9,8 @@ struct MessageBubbleView: View {
     let onReactionTap: ((String) -> Void)?
     let onAddReaction: ((String) -> Void)?
 
+    @State private var showReactionPicker = false
+
     var body: some View {
         HStack {
             if isOwnMessage {
@@ -28,11 +30,29 @@ struct MessageBubbleView: View {
                     .background(isOwnMessage ? Color.blue : Color(.systemGray5))
                     .foregroundColor(isOwnMessage ? .white : .primary)
                     .cornerRadius(16)
-                    .contextMenu {
+                    .onLongPressGesture {
+                        if onAddReaction != nil {
+                            showReactionPicker = true
+                        }
+                    }
+                    .sheet(isPresented: $showReactionPicker) {
                         if let onAddReaction = onAddReaction {
-                            ReactionPickerView(onSelect: { emoji in
-                                onAddReaction(emoji)
-                            })
+                            VStack(spacing: 16) {
+                                Text("リアクションを選択")
+                                    .font(.headline)
+                                    .padding(.top)
+
+                                ReactionPickerView(onSelect: { emoji in
+                                    onAddReaction(emoji)
+                                    showReactionPicker = false
+                                })
+
+                                Button("キャンセル") {
+                                    showReactionPicker = false
+                                }
+                                .padding(.bottom)
+                            }
+                            .presentationDetents([.height(250)])
                         }
                     }
 
