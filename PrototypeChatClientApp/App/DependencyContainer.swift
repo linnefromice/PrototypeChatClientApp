@@ -123,7 +123,7 @@ final class DependencyContainer: ObservableObject {
         if let mockReactionRepository = reactionRepository {
             self.reactionRepository = mockReactionRepository
         } else {
-            self.reactionRepository = MockReactionRepository() // Use mock for now since GET endpoint doesn't exist
+            self.reactionRepository = ReactionRepository(client: client)
         }
 
         self.authSessionManager = authSessionManager ?? AuthSessionManager()
