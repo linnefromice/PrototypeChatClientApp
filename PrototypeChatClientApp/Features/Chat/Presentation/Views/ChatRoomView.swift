@@ -85,22 +85,32 @@ struct ChatRoomView: View {
     }
 
     private var emptyStateView: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "bubble.left.and.bubble.right")
-                .font(.system(size: 48))
-                .foregroundColor(.gray)
-            Text("まだメッセージがありません")
-                .font(.headline)
-                .foregroundColor(.secondary)
+        VStack {
+            Spacer()
+            VStack(spacing: 16) {
+                Image(systemName: "bubble.left.and.bubble.right")
+                    .font(.system(size: 48))
+                    .foregroundColor(.gray)
+                Text("まだメッセージがありません")
+                    .font(.headline)
+                    .foregroundColor(.secondary)
+            }
+            Spacer()
         }
+        .frame(maxHeight: .infinity)
     }
 
     private var loadingView: some View {
-        VStack(spacing: 16) {
-            ProgressView()
-            Text("読み込み中...")
-                .foregroundColor(.secondary)
+        VStack {
+            Spacer()
+            VStack(spacing: 16) {
+                ProgressView()
+                Text("読み込み中...")
+                    .foregroundColor(.secondary)
+            }
+            Spacer()
         }
+        .frame(maxHeight: .infinity)
     }
 
     private var conversationTitle: String {

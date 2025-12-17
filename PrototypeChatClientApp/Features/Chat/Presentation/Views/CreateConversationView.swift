@@ -17,24 +17,54 @@ struct CreateConversationView: View {
 
     var body: some View {
         NavigationView {
-            Group {
-                if viewModel.isLoading {
-                    ProgressView("読み込み中...")
-                } else if viewModel.availableUsers.isEmpty {
-                    VStack(spacing: 16) {
-                        Image(systemName: "person.3")
-                            .font(.system(size: 48))
-                            .foregroundColor(.gray)
-                        Text("ユーザーが見つかりません")
-                            .font(.headline)
-                        Text("チャットを開始できるユーザーがいません")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
+            VStack(spacing: 0) {
+                // Mode selector
+                Picker("タイプ", selection: $viewModel.conversationType) {
+                    Text("ダイレクト").tag(ConversationType.direct)
+                    Text("グループ").tag(ConversationType.group)
+                }
+                .pickerStyle(.segmented)
+                .padding()
+
+                // Group name input and selection count (only for group mode)
+                if viewModel.conversationType == .group {
+                    VStack(alignment: .leading, spacing: 8) {
+                        TextField("グループ名を入力", text: $viewModel.groupName)
+                            .textFieldStyle(.roundedBorder)
                             .padding(.horizontal)
+
+                        if !viewModel.selectedUserIds.isEmpty {
+                            Text("\(viewModel.selectedUserIds.count)人選択中")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .padding(.horizontal)
+                        }
                     }
-                } else {
-                    userList
+                    .padding(.bottom, 8)
+                }
+
+                Divider()
+
+                // User list
+                Group {
+                    if viewModel.isLoading {
+                        ProgressView("読み込み中...")
+                    } else if viewModel.availableUsers.isEmpty {
+                        VStack(spacing: 16) {
+                            Image(systemName: "person.3")
+                                .font(.system(size: 48))
+                                .foregroundColor(.gray)
+                            Text("ユーザーが見つかりません")
+                                .font(.headline)
+                            Text("チャットを開始できるユーザーがいません")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal)
+                        }
+                    } else {
+                        userList
+                    }
                 }
             }
             .navigationTitle("新しいチャット")
@@ -73,7 +103,12 @@ struct CreateConversationView: View {
     private var userList: some View {
         List(viewModel.availableUsers) { user in
             Button {
-                viewModel.selectedUserId = user.id
+                switch viewModel.conversationType {
+                case .direct:
+                    viewModel.selectedUserId = user.id
+                case .group:
+                    viewModel.toggleUserSelection(user.id)
+                }
             } label: {
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
@@ -81,16 +116,28 @@ struct CreateConversationView: View {
                             .font(.headline)
                             .foregroundStyle(.primary)
 
-                        Text("ID: \(user.id)")
+                        Text("@\(user.idAlias)")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
 
                     Spacer()
 
-                    if viewModel.selectedUserId == user.id {
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundStyle(.blue)
+                    // Selection indicator
+                    switch viewModel.conversationType {
+                    case .direct:
+                        if viewModel.selectedUserId == user.id {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundStyle(.blue)
+                        }
+                    case .group:
+                        if viewModel.selectedUserIds.contains(user.id) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundStyle(.blue)
+                        } else {
+                            Image(systemName: "circle")
+                                .foregroundStyle(.gray)
+                        }
                     }
                 }
             }
@@ -98,7 +145,12 @@ struct CreateConversationView: View {
     }
 
     private func createConversation() async {
-        await viewModel.createDirectConversation()
+        switch viewModel.conversationType {
+        case .direct:
+            await viewModel.createDirectConversation()
+        case .group:
+            await viewModel.createGroupConversation()
+        }
     }
 }
 

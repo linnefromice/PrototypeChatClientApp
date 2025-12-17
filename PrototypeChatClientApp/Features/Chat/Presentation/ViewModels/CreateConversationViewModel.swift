@@ -9,7 +9,10 @@ class CreateConversationViewModel: ObservableObject {
     private let currentUserId: String
 
     @Published var availableUsers: [User] = []
+    @Published var conversationType: ConversationType = .direct
     @Published var selectedUserId: String?
+    @Published var selectedUserIds: Set<String> = []
+    @Published var groupName: String = ""
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     @Published var showError: Bool = false
@@ -92,8 +95,71 @@ class CreateConversationViewModel: ObservableObject {
         isLoading = false
     }
 
+    /// グループチャットを作成
+    @MainActor
+    func createGroupConversation() async {
+        guard !groupName.trimmingCharacters(in: .whitespaces).isEmpty else {
+            errorMessage = "グループ名を入力してください"
+            showError = true
+            return
+        }
+
+        guard selectedUserIds.count >= 2 else {
+            errorMessage = "参加者を2人以上選択してください"
+            showError = true
+            return
+        }
+
+        isLoading = true
+        errorMessage = nil
+        showError = false
+
+        do {
+            createdConversation = try await conversationUseCase.createGroupConversation(
+                currentUserId: currentUserId,
+                participantUserIds: Array(selectedUserIds),
+                groupName: groupName.trimmingCharacters(in: .whitespaces)
+            )
+        } catch {
+            // Check if the error is a cancellation error (URLError -999)
+            if let urlError = error as? URLError, urlError.code == .cancelled {
+                print("ℹ️ [CreateConversationViewModel] createGroupConversation cancelled")
+                // Don't show error to user for cancellation
+            } else if (error as NSError).code == NSURLErrorCancelled {
+                print("ℹ️ [CreateConversationViewModel] createGroupConversation cancelled")
+                // Don't show error to user for cancellation
+            } else {
+                let message = "グループチャットの作成に失敗しました: \(error.localizedDescription)"
+                print("❌ [CreateConversationViewModel] createGroupConversation failed - \(error)")
+                errorMessage = message
+                showError = true
+            }
+        }
+
+        isLoading = false
+    }
+
+    /// ユーザー選択を切り替え（グループモード用）
+    func toggleUserSelection(_ userId: String) {
+        if selectedUserIds.contains(userId) {
+            selectedUserIds.remove(userId)
+        } else {
+            selectedUserIds.insert(userId)
+        }
+    }
+
     /// 作成ボタンが有効かどうか
     var canCreate: Bool {
-        selectedUserId != nil && !isLoading
+        if isLoading {
+            return false
+        }
+
+        switch conversationType {
+        case .direct:
+            return selectedUserId != nil
+        case .group:
+            return selectedUserIds.count >= 2
+                && !groupName.trimmingCharacters(in: .whitespaces).isEmpty
+        }
     }
 }
