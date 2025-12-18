@@ -42,6 +42,9 @@ class ChatRoomViewModel: ObservableObject {
                 userId: currentUserId,
                 limit: 50
             )
+
+            // Load reactions for all messages
+            await loadReactionsForMessages()
         } catch {
             if let urlError = error as? URLError, urlError.code == .cancelled {
                 print("ℹ️ [ChatRoomViewModel] loadMessages cancelled")
@@ -56,6 +59,30 @@ class ChatRoomViewModel: ObservableObject {
         }
 
         isLoading = false
+    }
+
+    private func loadReactionsForMessages() async {
+        await withTaskGroup(of: (String, [Reaction]?).self) { group in
+            for message in messages {
+                group.addTask {
+                    do {
+                        let reactions = try await self.reactionUseCase.fetchReactions(
+                            messageId: message.id
+                        )
+                        return (message.id, reactions)
+                    } catch {
+                        print("❌ Failed to fetch reactions for message \(message.id): \(error)")
+                        return (message.id, nil)
+                    }
+                }
+            }
+
+            for await (messageId, reactions) in group {
+                if let reactions = reactions {
+                    self.messageReactions[messageId] = reactions
+                }
+            }
+        }
     }
 
     func sendMessage() async {
@@ -102,6 +129,14 @@ class ChatRoomViewModel: ObservableObject {
 
     // MARK: - Reaction Methods
     func addReaction(to messageId: String, emoji: String) async {
+        // Prevent reacting to own messages
+        guard let message = messages.first(where: { $0.id == messageId }),
+              !isOwnMessage(message) else {
+            errorMessage = "自分のメッセージにはリアクションできません"
+            showError = true
+            return
+        }
+
         do {
             let reaction = try await reactionUseCase.addReaction(
                 messageId: messageId,
@@ -120,6 +155,14 @@ class ChatRoomViewModel: ObservableObject {
     }
 
     func removeReaction(from messageId: String, emoji: String) async {
+        // Prevent reacting to own messages
+        guard let message = messages.first(where: { $0.id == messageId }),
+              !isOwnMessage(message) else {
+            errorMessage = "自分のメッセージにはリアクションできません"
+            showError = true
+            return
+        }
+
         do {
             try await reactionUseCase.removeReaction(
                 messageId: messageId,
@@ -140,15 +183,44 @@ class ChatRoomViewModel: ObservableObject {
     }
 
     func toggleReaction(on messageId: String, emoji: String) async {
-        // Check if user has already reacted with this emoji
-        let hasReacted = messageReactions[messageId]?.contains { reaction in
-            reaction.userId == currentUserId && reaction.emoji == emoji
-        } ?? false
+        // Prevent reacting to own messages
+        guard let message = messages.first(where: { $0.id == messageId }),
+              !isOwnMessage(message) else {
+            errorMessage = "自分のメッセージにはリアクションできません"
+            showError = true
+            return
+        }
 
-        if hasReacted {
+        // Find user's existing reaction on this message
+        let existingReaction = messageReactions[messageId]?.first {
+            $0.userId == currentUserId
+        }
+
+        // Same emoji → remove (toggle off)
+        if existingReaction?.emoji == emoji {
             await removeReaction(from: messageId, emoji: emoji)
-        } else {
-            await addReaction(to: messageId, emoji: emoji)
+            return
+        }
+
+        // Different emoji or no reaction → replace or add
+        do {
+            let reaction = try await reactionUseCase.replaceReaction(
+                messageId: messageId,
+                userId: currentUserId,
+                oldEmoji: existingReaction?.emoji,
+                newEmoji: emoji
+            )
+
+            // Update local state
+            if let oldEmoji = existingReaction?.emoji {
+                messageReactions[messageId]?.removeAll {
+                    $0.userId == currentUserId && $0.emoji == oldEmoji
+                }
+            }
+            messageReactions[messageId, default: []].append(reaction)
+        } catch {
+            errorMessage = "リアクションを変更できませんでした: \(error.localizedDescription)"
+            showError = true
         }
     }
 
