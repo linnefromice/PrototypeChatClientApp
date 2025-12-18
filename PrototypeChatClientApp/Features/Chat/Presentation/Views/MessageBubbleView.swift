@@ -62,6 +62,7 @@ struct MessageBubbleView: View {
                     ReactionSummaryView(
                         summaries: reactions,
                         currentUserId: currentUserId,
+                        alignment: isOwnMessage ? .trailing : .leading,
                         onTap: onReactionTap
                     )
                 }
@@ -103,7 +104,7 @@ struct MessageBubbleView: View {
             isOwnMessage: true,
             senderName: nil,
             reactions: [
-                ReactionSummary(emoji: "👍", count: 2, userIds: ["user-1", "user-3"]),
+                ReactionSummary(emoji: "👍", count: 2, userIds: ["user-2", "user-3"]),
                 ReactionSummary(emoji: "❤️", count: 1, userIds: ["user-2"])
             ],
             currentUserId: "user-1",
@@ -124,10 +125,12 @@ struct MessageBubbleView: View {
             ),
             isOwnMessage: false,
             senderName: "Bob",
-            reactions: nil,
+            reactions: [
+                ReactionSummary(emoji: "😂", count: 1, userIds: ["user-1"])
+            ],
             currentUserId: "user-1",
-            onReactionTap: nil,
-            onAddReaction: nil
+            onReactionTap: { emoji in print("Tapped: \(emoji)") },
+            onAddReaction: { emoji in print("Added: \(emoji)") }
         )
     }
 }
