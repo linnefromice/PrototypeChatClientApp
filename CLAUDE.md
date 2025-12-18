@@ -138,29 +138,67 @@ All dependencies are managed centrally in `App/DependencyContainer.swift`:
 
 ### Authentication Feature (✅ Implemented)
 
-**Mock authentication flow:**
-- User ID input only (no password)
-- Calls `GET /users/{userId}` to validate user
-- Stores session in UserDefaults
+**BetterAuth Integration (Primary):**
+- Username/password authentication
+- Cookie-based session management (automatic via HTTPCookieStorage)
+- User registration with email validation
+- Session validation via backend API
+- Automatic legacy session migration
+
+**Legacy Support (Backward Compatibility):**
+- ID Alias authentication still supported
+- Automatic migration from UserDefaults to cookie-based sessions
 - Test users: `user-1` (Alice), `user-2` (Bob), `user-3` (Charlie)
 
 **Architecture:**
 ```
 Presentation/
   - AuthenticationViewModel (@MainActor)
-  - AuthenticationView, RootView, MainView
+    - login(), register(), checkAuthentication()
+  - AuthenticationView (username/password login)
+  - RegistrationView (full registration form)
+  - RootView (session validation on app start)
 Domain/
   - AuthenticationUseCase
+    - BetterAuth methods: register(), login(), validateSession()
+    - Legacy: authenticate(idAlias:)
   - Entities: AuthSession, AuthenticationError
+  - Repositories: AuthenticationRepositoryProtocol
 Data/
-  - MockUserRepository (for offline development)
-  - AuthSessionManager (UserDefaults persistence)
+  - DefaultAuthRepository (BetterAuth API integration)
+  - MockAuthRepository (testing)
+  - AuthSessionManager (cookie + UserDefaults management)
+Infrastructure/
+  - NetworkConfiguration (cookie-based URLSession)
 ```
 
-### API Connection (⏳ Planned)
+**Session Management:**
+- **Cookie-based**: Sessions managed via HTTPCookieStorage (automatic)
+- **Legacy migration**: Old UserDefaults sessions automatically detected and migrated
+- **Logout**: Clears both cookies and UserDefaults
 
-Currently using mock repositories. Future implementation will use:
-- Apple's swift-openapi-generator
+**Test Users (MockAuthRepository):**
+- alice / password123 → Alice
+- bob / password123 → Bob
+- charlie / password123 → Charlie
+
+### API Connection (✅ Implemented)
+
+**Authentication API:**
+- **DefaultAuthRepository**: Real API implementation using BetterAuth
+  - `POST /api/auth/sign-up/email` - User registration
+  - `POST /api/auth/sign-in/username` - Login
+  - `GET /api/auth/get-session` - Session validation
+  - `POST /api/auth/sign-out` - Logout
+- **Cookie Management**: Automatic via `NetworkConfiguration.session`
+- **Error Handling**: 400/401/500 status codes with user-friendly messages
+
+**Mock Repositories:**
+- Still available for offline development and testing
+- `MockAuthRepository`, `MockUserRepository`, etc.
+
+**OpenAPI-Generated Client:**
+- Apple's swift-openapi-generator for other APIs
 - Generated client from OpenAPI spec
 - Code generation in `Infrastructure/Network/Generated/`
 
