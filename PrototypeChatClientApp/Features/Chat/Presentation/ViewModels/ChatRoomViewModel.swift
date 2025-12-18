@@ -37,11 +37,14 @@ class ChatRoomViewModel: ObservableObject {
         showError = false
 
         do {
-            messages = try await messageUseCase.fetchMessages(
+            let fetchedMessages = try await messageUseCase.fetchMessages(
                 conversationId: conversationId,
                 userId: currentUserId,
                 limit: 50
             )
+
+            // Sort messages by createdAt ascending (oldest first, newest at bottom)
+            messages = fetchedMessages.sorted { $0.createdAt < $1.createdAt }
 
             // Load reactions for all messages
             await loadReactionsForMessages()
