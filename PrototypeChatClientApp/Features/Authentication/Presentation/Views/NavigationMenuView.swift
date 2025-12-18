@@ -42,7 +42,9 @@ struct NavigationMenuView: View {
     let viewModel = container.authenticationViewModel
     viewModel.isAuthenticated = true
     viewModel.currentSession = AuthSession(
-        userId: "user-1",
+        authUserId: "auth-1",
+        username: "alice",
+        email: "alice@example.com",
         user: User(id: "user-1", idAlias: "alice", name: "Alice", avatarUrl: nil, createdAt: Date()),
         authenticatedAt: Date()
     )

@@ -35,7 +35,9 @@ struct RootView_Previews: PreviewProvider {
             let authViewModel = authContainer.authenticationViewModel
             authViewModel.isAuthenticated = true
             authViewModel.currentSession = AuthSession(
-                userId: "user-1",
+                authUserId: "auth-1",
+                username: "alice",
+                email: "alice@example.com",
                 user: User(id: "user-1", idAlias: "alice", name: "Alice", avatarUrl: nil, createdAt: Date()),
                 authenticatedAt: Date()
             )

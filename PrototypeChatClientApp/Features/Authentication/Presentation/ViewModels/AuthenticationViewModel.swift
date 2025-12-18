@@ -62,10 +62,17 @@ class AuthenticationViewModel: ObservableObject {
 
     /// ログアウト
     func logout() {
-        authenticationUseCase.logout()
-        currentSession = nil
-        isAuthenticated = false
-        idAlias = ""
+        Task {
+            do {
+                try await authenticationUseCase.logout()
+                currentSession = nil
+                isAuthenticated = false
+                idAlias = ""
+            } catch {
+                print("❌ [AuthenticationViewModel] logout failed: \(error)")
+                errorMessage = "ログアウトに失敗しました"
+            }
+        }
     }
 
     /// 最後に使用したUser IDを取得（後方互換性のため維持）
