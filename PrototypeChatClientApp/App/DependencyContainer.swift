@@ -37,6 +37,9 @@ final class DependencyContainer: ObservableObject {
     /// メッセージリポジトリ（実装版・Mock版を切り替え可能）
     var messageRepository: MessageRepositoryProtocol
 
+    /// リアクションリポジトリ（実装版・Mock版を切り替え可能）
+    var reactionRepository: ReactionRepositoryProtocol
+
     /// 認証セッションマネージャー
     var authSessionManager: AuthSessionManagerProtocol
 
@@ -65,6 +68,11 @@ final class DependencyContainer: ObservableObject {
         MessageUseCase(messageRepository: messageRepository)
     }()
 
+    /// リアクションUseCase
+    lazy var reactionUseCase: ReactionUseCase = {
+        ReactionUseCase(reactionRepository: reactionRepository)
+    }()
+
     // MARK: - View Models
 
     /// 認証ViewModel（lazy初期化）
@@ -86,6 +94,7 @@ final class DependencyContainer: ObservableObject {
         userRepository: UserRepositoryProtocol? = nil,
         conversationRepository: ConversationRepositoryProtocol? = nil,
         messageRepository: MessageRepositoryProtocol? = nil,
+        reactionRepository: ReactionRepositoryProtocol? = nil,
         authSessionManager: AuthSessionManagerProtocol? = nil
     ) {
         self.environment = environment
@@ -111,6 +120,12 @@ final class DependencyContainer: ObservableObject {
             self.messageRepository = MessageRepository(client: client)
         }
 
+        if let mockReactionRepository = reactionRepository {
+            self.reactionRepository = mockReactionRepository
+        } else {
+            self.reactionRepository = ReactionRepository(client: client)
+        }
+
         self.authSessionManager = authSessionManager ?? AuthSessionManager()
     }
 
@@ -121,11 +136,13 @@ final class DependencyContainer: ObservableObject {
         userRepository: UserRepositoryProtocol? = nil,
         conversationRepository: ConversationRepositoryProtocol? = nil,
         messageRepository: MessageRepositoryProtocol? = nil,
+        reactionRepository: ReactionRepositoryProtocol? = nil,
         authSessionManager: AuthSessionManagerProtocol? = nil
     ) -> DependencyContainer {
         let mockUserRepo = userRepository ?? MockUserRepository()
         let mockConversationRepo = conversationRepository ?? MockConversationRepository()
         let mockMessageRepo = messageRepository ?? MockMessageRepository()
+        let mockReactionRepo = reactionRepository ?? MockReactionRepository()
         let mockSessionManager = authSessionManager ?? MockAuthSessionManager()
 
         return DependencyContainer(
@@ -133,6 +150,7 @@ final class DependencyContainer: ObservableObject {
             userRepository: mockUserRepo,
             conversationRepository: mockConversationRepo,
             messageRepository: mockMessageRepo,
+            reactionRepository: mockReactionRepo,
             authSessionManager: mockSessionManager
         )
     }
@@ -144,12 +162,14 @@ final class DependencyContainer: ObservableObject {
 
         let mockConversationRepository = MockConversationRepository()
         let mockMessageRepository = MockMessageRepository()
+        let mockReactionRepository = MockReactionRepository()
         let mockSessionManager = MockAuthSessionManager()
 
         return makeTestContainer(
             userRepository: mockUserRepository,
             conversationRepository: mockConversationRepository,
             messageRepository: mockMessageRepository,
+            reactionRepository: mockReactionRepository,
             authSessionManager: mockSessionManager
         )
     }

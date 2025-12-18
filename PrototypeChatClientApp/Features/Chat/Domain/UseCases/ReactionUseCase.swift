@@ -19,6 +19,29 @@ class ReactionUseCase {
         return try await reactionRepository.fetchReactions(messageId: messageId)
     }
 
+    func replaceReaction(
+        messageId: String,
+        userId: String,
+        oldEmoji: String?,
+        newEmoji: String
+    ) async throws -> Reaction {
+        // 1. 既存のリアクションがあれば削除
+        if let oldEmoji = oldEmoji {
+            try await removeReaction(
+                messageId: messageId,
+                userId: userId,
+                emoji: oldEmoji
+            )
+        }
+
+        // 2. 新しいリアクションを追加
+        return try await addReaction(
+            messageId: messageId,
+            userId: userId,
+            emoji: newEmoji
+        )
+    }
+
     func computeSummaries(reactions: [Reaction], currentUserId: String) -> [ReactionSummary] {
         // Group reactions by emoji
         var emojiGroups: [String: [Reaction]] = [:]

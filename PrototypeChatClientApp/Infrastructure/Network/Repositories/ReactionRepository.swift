@@ -10,15 +10,29 @@ class ReactionRepository: ReactionRepositoryProtocol {
     }
 
     func fetchReactions(messageId: String) async throws -> [Reaction] {
-        // NOTE: The current OpenAPI schema does not have a GET /messages/{id}/reactions endpoint.
-        // Reactions would typically be included in the Message response or fetched separately.
-        // For now, this returns an empty array. In a real implementation, reactions might be:
-        // 1. Embedded in the Message entity from GET /conversations/{id}/messages
-        // 2. Fetched via a dedicated GET endpoint (needs to be added to API spec)
-        //
-        // TODO: Implement actual reaction fetching when API endpoint is available
-        print("ℹ️ [ReactionRepository] fetchReactions not yet implemented - returning empty array")
-        return []
+        let input = Operations.get_sol_messages_sol__lcub_id_rcub__sol_reactions.Input(
+            path: .init(id: messageId)
+        )
+
+        do {
+            let response = try await client.get_sol_messages_sol__lcub_id_rcub__sol_reactions(input)
+
+            switch response {
+            case .ok(let okResponse):
+                let reactionDTOs = try okResponse.body.json
+                return reactionDTOs.map { $0.toDomain() }
+            case .undocumented(statusCode: let code, _):
+                let error = NetworkError.from(statusCode: code)
+                print("❌ [ReactionRepository] fetchReactions failed - Status: \(code), Error: \(error)")
+                throw error
+            }
+        } catch let error as NetworkError {
+            print("❌ [ReactionRepository] fetchReactions failed - NetworkError: \(error)")
+            throw error
+        } catch {
+            print("❌ [ReactionRepository] fetchReactions failed - Unexpected error: \(error)")
+            throw error
+        }
     }
 
     func addReaction(messageId: String, userId: String, emoji: String) async throws -> Reaction {

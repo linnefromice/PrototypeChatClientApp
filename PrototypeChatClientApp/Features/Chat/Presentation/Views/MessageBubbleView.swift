@@ -4,6 +4,12 @@ struct MessageBubbleView: View {
     let message: Message
     let isOwnMessage: Bool
     let senderName: String?
+    let reactions: [ReactionSummary]?
+    let currentUserId: String?
+    let onReactionTap: ((String) -> Void)?
+    let onAddReaction: ((String) -> Void)?
+
+    @State private var showReactionPicker = false
 
     var body: some View {
         HStack {
@@ -24,6 +30,42 @@ struct MessageBubbleView: View {
                     .background(isOwnMessage ? Color.blue : Color(.systemGray5))
                     .foregroundColor(isOwnMessage ? .white : .primary)
                     .cornerRadius(16)
+                    .onLongPressGesture {
+                        if onAddReaction != nil {
+                            showReactionPicker = true
+                        }
+                    }
+                    .sheet(isPresented: $showReactionPicker) {
+                        if let onAddReaction = onAddReaction {
+                            VStack(spacing: 16) {
+                                Text("リアクションを選択")
+                                    .font(.headline)
+                                    .padding(.top)
+
+                                ReactionPickerView(onSelect: { emoji in
+                                    onAddReaction(emoji)
+                                    showReactionPicker = false
+                                })
+
+                                Button("キャンセル") {
+                                    showReactionPicker = false
+                                }
+                                .padding(.bottom)
+                            }
+                            .presentationDetents([.height(250)])
+                        }
+                    }
+
+                if let reactions = reactions, !reactions.isEmpty,
+                   let currentUserId = currentUserId,
+                   let onReactionTap = onReactionTap {
+                    ReactionSummaryView(
+                        summaries: reactions,
+                        currentUserId: currentUserId,
+                        alignment: isOwnMessage ? .trailing : .leading,
+                        onTap: onReactionTap
+                    )
+                }
 
                 Text(formattedTime)
                     .font(.caption2)
@@ -60,7 +102,14 @@ struct MessageBubbleView: View {
                 systemEvent: nil
             ),
             isOwnMessage: true,
-            senderName: nil
+            senderName: nil,
+            reactions: [
+                ReactionSummary(emoji: "👍", count: 2, userIds: ["user-2", "user-3"]),
+                ReactionSummary(emoji: "❤️", count: 1, userIds: ["user-2"])
+            ],
+            currentUserId: "user-1",
+            onReactionTap: { emoji in print("Tapped: \(emoji)") },
+            onAddReaction: { emoji in print("Added: \(emoji)") }
         )
 
         MessageBubbleView(
@@ -75,7 +124,13 @@ struct MessageBubbleView: View {
                 systemEvent: nil
             ),
             isOwnMessage: false,
-            senderName: "Bob"
+            senderName: "Bob",
+            reactions: [
+                ReactionSummary(emoji: "😂", count: 1, userIds: ["user-1"])
+            ],
+            currentUserId: "user-1",
+            onReactionTap: { emoji in print("Tapped: \(emoji)") },
+            onAddReaction: { emoji in print("Added: \(emoji)") }
         )
     }
 }

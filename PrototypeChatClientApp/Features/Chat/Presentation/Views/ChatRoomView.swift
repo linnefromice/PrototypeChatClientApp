@@ -57,7 +57,19 @@ struct ChatRoomView: View {
                         MessageBubbleView(
                             message: message,
                             isOwnMessage: viewModel.isOwnMessage(message),
-                            senderName: senderName(for: message)
+                            senderName: senderName(for: message),
+                            reactions: viewModel.reactionSummaries(for: message.id),
+                            currentUserId: viewModel.currentUserId,
+                            onReactionTap: { emoji in
+                                Task {
+                                    await viewModel.toggleReaction(on: message.id, emoji: emoji)
+                                }
+                            },
+                            onAddReaction: { emoji in
+                                Task {
+                                    await viewModel.addReaction(to: message.id, emoji: emoji)
+                                }
+                            }
                         )
                         .id(message.id)
                     }
