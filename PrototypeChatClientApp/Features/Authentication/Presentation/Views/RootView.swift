@@ -2,10 +2,20 @@ import SwiftUI
 
 struct RootView: View {
     @EnvironmentObject var authViewModel: AuthenticationViewModel
+    @State private var isValidatingSession = true
 
     var body: some View {
         Group {
-            if authViewModel.isAuthenticated {
+            if isValidatingSession {
+                // セッション検証中
+                VStack(spacing: 16) {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle())
+                    Text("認証情報を確認中...")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            } else if authViewModel.isAuthenticated {
                 // 認証済み: メイン画面へ
                 MainView()
                     .transition(.opacity)
@@ -16,6 +26,14 @@ struct RootView: View {
             }
         }
         .animation(.easeInOut, value: authViewModel.isAuthenticated)
+        .task {
+            await validateSession()
+        }
+    }
+
+    private func validateSession() async {
+        await authViewModel.checkAuthentication()
+        isValidatingSession = false
     }
 }
 
