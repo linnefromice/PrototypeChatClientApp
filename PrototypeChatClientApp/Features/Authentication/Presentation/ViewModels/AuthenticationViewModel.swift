@@ -38,24 +38,39 @@ class AuthenticationViewModel: ObservableObject {
 
     /// アプリ起動時の認証チェック（Cookie-based session validation）
     func checkAuthentication() async {
+        // Step 1: Try to validate session via backend cookie
         do {
-            // Try to validate session via backend cookie
             if let session = try await authenticationUseCase.validateSession() {
                 self.currentSession = session
                 self.isAuthenticated = true
                 self.username = session.username
+                print("✅ [AuthenticationViewModel] Session validated via cookie")
                 return
             }
         } catch {
             print("⚠️ [AuthenticationViewModel] Session validation failed: \(error)")
         }
 
-        // Fallback: Check for old local session (migration path)
-        if let session = authenticationUseCase.loadSavedSession() {
-            self.currentSession = session
-            self.isAuthenticated = true
-            self.username = session.username
+        // Step 2: Check for old local session (migration path)
+        if sessionManager.hasLegacySession() && !sessionManager.isLegacySessionMigrated() {
+            print("⚠️ [AuthenticationViewModel] Legacy session detected - migration required")
+            await handleLegacySessionMigration()
+            return
         }
+
+        // Step 3: No valid session - show login screen
+        print("ℹ️ [AuthenticationViewModel] No valid session found")
+    }
+
+    /// 旧セッションマイグレーション処理
+    private func handleLegacySessionMigration() async {
+        // Clear old session data
+        sessionManager.clearSession()
+        sessionManager.markLegacySessionMigrated()
+
+        // Show migration message to user
+        self.errorMessage = "認証方式が更新されました。お手数ですが、再度ログインしてください。"
+        print("✅ [AuthenticationViewModel] Legacy session migrated - user needs to re-login")
     }
 
     /// BetterAuth username/password login
