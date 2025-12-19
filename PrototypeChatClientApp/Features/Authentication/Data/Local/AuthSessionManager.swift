@@ -5,12 +5,12 @@ import Foundation
 /// スコープ: Features/Authentication内でのみ使用
 ///
 /// 注意: Cookie-based認証では、セッションはHTTPCookieで管理されます。
-/// このマネージャーは主に旧セッション（UserDefaults）のマイグレーション用です。
+/// このマネージャーは主にログアウト時のクリーンアップに使用されます。
 protocol AuthSessionManagerProtocol {
     /// セッション保存（Legacy - Cookie-basedでは使用しない）
     func saveSession(_ session: AuthSession) throws
 
-    /// セッション読み込み（Legacy - マイグレーション用）
+    /// セッション読み込み（Legacy）
     func loadSession() -> AuthSession?
 
     /// セッションクリア（Cookie + UserDefaults両方をクリア）
@@ -18,22 +18,12 @@ protocol AuthSessionManagerProtocol {
 
     /// 最後に使用したUser ID取得
     func getLastUserId() -> String?
-
-    /// 旧セッション検出（UserDefaultsにセッションが残っているか）
-    func hasLegacySession() -> Bool
-
-    /// 旧セッションマイグレーション完了をマーク
-    func markLegacySessionMigrated()
-
-    /// マイグレーション済みかチェック
-    func isLegacySessionMigrated() -> Bool
 }
 
 /// 認証セッション管理実装
 ///
-/// Cookie-based認証への移行:
-/// - 新規ログイン: Cookieで管理（UserDefaultsは使用しない）
-/// - 旧セッション: UserDefaultsから検出してマイグレーション
+/// Cookie-based認証:
+/// - セッション: Cookieで管理（UserDefaultsは使用しない）
 /// - ログアウト: Cookie + UserDefaults両方をクリア
 class AuthSessionManager: AuthSessionManagerProtocol {
     private let userDefaults: UserDefaults
@@ -87,25 +77,5 @@ class AuthSessionManager: AuthSessionManagerProtocol {
 
     func getLastUserId() -> String? {
         return userDefaults.string(forKey: AuthenticationStorageKey.lastUserId)
-    }
-
-    // MARK: - Migration Support
-
-    /// 旧セッション検出（UserDefaultsにセッションが残っているか）
-    func hasLegacySession() -> Bool {
-        return userDefaults.data(forKey: AuthenticationStorageKey.authSession) != nil
-    }
-
-    /// 旧セッションマイグレーション完了をマーク
-    func markLegacySessionMigrated() {
-        userDefaults.set(true, forKey: AuthenticationStorageKey.legacySessionMigrated)
-        // 旧セッションデータを削除
-        userDefaults.removeObject(forKey: AuthenticationStorageKey.authSession)
-        print("✅ [AuthSessionManager] Legacy session marked as migrated")
-    }
-
-    /// マイグレーション済みかチェック
-    func isLegacySessionMigrated() -> Bool {
-        return userDefaults.bool(forKey: AuthenticationStorageKey.legacySessionMigrated)
     }
 }

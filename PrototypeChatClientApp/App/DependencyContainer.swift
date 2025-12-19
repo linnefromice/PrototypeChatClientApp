@@ -198,8 +198,6 @@ class MockAuthSessionManager: AuthSessionManagerProtocol {
     var savedSession: AuthSession?
     var shouldThrowError: Error?
     var lastUserId: String?
-    var hasLegacy: Bool = false
-    var isMigrated: Bool = false
 
     func saveSession(_ session: AuthSession) throws {
         if let error = shouldThrowError {
@@ -219,19 +217,6 @@ class MockAuthSessionManager: AuthSessionManagerProtocol {
 
     func getLastUserId() -> String? {
         return lastUserId
-    }
-
-    func hasLegacySession() -> Bool {
-        return hasLegacy
-    }
-
-    func markLegacySessionMigrated() {
-        isMigrated = true
-        hasLegacy = false
-    }
-
-    func isLegacySessionMigrated() -> Bool {
-        return isMigrated
     }
 }
 
