@@ -26,15 +26,18 @@ protocol AuthenticationUseCaseProtocol {
 /// - 入力バリデーション
 class AuthenticationUseCase: AuthenticationUseCaseProtocol {
     private let authRepository: AuthenticationRepositoryProtocol
+    private let profileRepository: ProfileRepositoryProtocol
     private let userRepository: UserRepositoryProtocol  // Legacy support
     private let sessionManager: AuthSessionManagerProtocol
 
     init(
         authRepository: AuthenticationRepositoryProtocol,
+        profileRepository: ProfileRepositoryProtocol,
         userRepository: UserRepositoryProtocol,
         sessionManager: AuthSessionManagerProtocol
     ) {
         self.authRepository = authRepository
+        self.profileRepository = profileRepository
         self.userRepository = userRepository
         self.sessionManager = sessionManager
     }
@@ -120,15 +123,15 @@ class AuthenticationUseCase: AuthenticationUseCaseProtocol {
         try validateName(name)
 
         // 2. Call repository to register
-        let session = try await authRepository.signUp(
+        var session = try await authRepository.signUp(
             username: username,
             email: email,
             password: password,
             name: name
         )
 
-        // 3. Session is managed via cookies, no need to save manually
-        // sessionManager is used for migration/fallback only
+        // 3. Fetch complete profile to get chat user ID
+        session = try await fetchCompleteProfile(baseSession: session)
 
         return session
     }
@@ -143,12 +146,13 @@ class AuthenticationUseCase: AuthenticationUseCaseProtocol {
         }
 
         // 2. Call repository to sign in
-        let session = try await authRepository.signIn(
+        var session = try await authRepository.signIn(
             username: username,
             password: password
         )
 
-        // 3. Session is managed via cookies, no need to save manually
+        // 3. Fetch complete profile to get chat user ID
+        session = try await fetchCompleteProfile(baseSession: session)
 
         return session
     }
@@ -207,6 +211,34 @@ class AuthenticationUseCase: AuthenticationUseCaseProtocol {
 
         guard trimmed.count <= 50 else {
             throw AuthenticationError.invalidName
+        }
+    }
+
+    // MARK: - Profile Helpers
+
+    /// Fetch complete profile after authentication to get proper chat user ID
+    private func fetchCompleteProfile(baseSession: AuthSession) async throws -> AuthSession {
+        do {
+            let profile = try await profileRepository.fetchProfile()
+
+            // If chat user is available, update the session
+            if let chatUser = profile.chatUser {
+                return AuthSession(
+                    authUserId: profile.authUserId,
+                    username: profile.username,
+                    email: profile.email,
+                    user: chatUser,
+                    chatUser: chatUser,
+                    authenticatedAt: baseSession.authenticatedAt
+                )
+            } else {
+                // No chat user available, return base session
+                return baseSession
+            }
+        } catch {
+            print("⚠️ [AuthenticationUseCase] Failed to fetch profile, using base session: \(error)")
+            // Fallback to base session if profile fetch fails
+            return baseSession
         }
     }
 }
