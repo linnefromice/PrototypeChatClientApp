@@ -140,6 +140,7 @@ class DefaultAuthRepository: AuthenticationRepositoryProtocol {
 private struct AuthResponse: Decodable {
     let user: AuthUser
     let session: Session?
+    let chat: ChatUserResponse?  // NEW: Optional chat user from backend
 
     struct AuthUser: Decodable {
         let id: String
@@ -157,6 +158,31 @@ private struct AuthResponse: Decodable {
         }
     }
 
+    /// Chat user response from backend
+    struct ChatUserResponse: Decodable {
+        let id: String
+        let idAlias: String
+        let name: String
+        let avatarUrl: String?
+
+        enum CodingKeys: String, CodingKey {
+            case id
+            case idAlias = "id_alias"
+            case name
+            case avatarUrl = "avatar_url"
+        }
+
+        func toUser() -> User {
+            User(
+                id: id,
+                idAlias: idAlias,
+                name: name,
+                avatarUrl: avatarUrl,
+                createdAt: Date()
+            )
+        }
+    }
+
     struct Session: Decodable {
         let token: String?
         let expiresAt: Date?
@@ -168,9 +194,11 @@ private struct AuthResponse: Decodable {
     }
 
     func toAuthSession() throws -> AuthSession {
-        // For now, create a basic User entity
-        // In production, you'd fetch the full chat user profile
-        let chatUser = User(
+        // Parse chat user from response if available
+        let chatUserEntity = chat?.toUser()
+
+        // Create placeholder user for backward compatibility
+        let placeholderUser = User(
             id: user.chatUserId ?? user.id,
             idAlias: user.username,  // Use username as idAlias for compatibility
             name: user.name,
@@ -182,7 +210,8 @@ private struct AuthResponse: Decodable {
             authUserId: user.id,
             username: user.username,
             email: user.email,
-            user: chatUser,
+            user: chatUserEntity ?? placeholderUser,  // Use chat user if available, otherwise placeholder
+            chatUser: chatUserEntity,  // Explicit chat user (nil if not available)
             authenticatedAt: Date()
         )
     }

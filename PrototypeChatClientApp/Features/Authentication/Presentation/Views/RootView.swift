@@ -42,28 +42,38 @@ struct RootView_Previews: PreviewProvider {
     static var previews: some View {
         Group {
             // 未認証
-            let unauthContainer = DependencyContainer.makePreviewContainer()
-            RootView()
-                .environmentObject(unauthContainer.authenticationViewModel)
-                .environmentObject(unauthContainer)
-                .previewDisplayName("未認証")
+            unauthenticatedPreview
 
             // 認証済み
-            let authContainer = DependencyContainer.makePreviewContainer()
-            let authViewModel = authContainer.authenticationViewModel
-            authViewModel.isAuthenticated = true
-            authViewModel.currentSession = AuthSession(
-                authUserId: "auth-1",
-                username: "alice",
-                email: "alice@example.com",
-                user: User(id: "user-1", idAlias: "alice", name: "Alice", avatarUrl: nil, createdAt: Date()),
-                authenticatedAt: Date()
-            )
-
-            return RootView()
-                .environmentObject(authViewModel)
-                .environmentObject(authContainer)
-                .previewDisplayName("認証済み")
+            authenticatedPreview
         }
+    }
+
+    static var unauthenticatedPreview: some View {
+        let container = DependencyContainer.makePreviewContainer()
+        return RootView()
+            .environmentObject(container.authenticationViewModel)
+            .environmentObject(container)
+            .previewDisplayName("未認証")
+    }
+
+    static var authenticatedPreview: some View {
+        let container = DependencyContainer.makePreviewContainer()
+        let authViewModel = container.authenticationViewModel
+        let aliceUser = User(id: "user-1", idAlias: "alice", name: "Alice", avatarUrl: nil, createdAt: Date())
+        authViewModel.isAuthenticated = true
+        authViewModel.currentSession = AuthSession(
+            authUserId: "auth-1",
+            username: "alice",
+            email: "alice@example.com",
+            user: aliceUser,
+            chatUser: aliceUser,
+            authenticatedAt: Date()
+        )
+
+        return RootView()
+            .environmentObject(authViewModel)
+            .environmentObject(container)
+            .previewDisplayName("認証済み")
     }
 }

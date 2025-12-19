@@ -7,7 +7,7 @@ import Foundation
 ///
 /// 構造:
 /// - auth_user情報（BetterAuth認証データ）: authUserId, username, email
-/// - chat_user情報（チャットプロフィール）: user (User entity)
+/// - chat_user情報（チャットプロフィール）: user (backward compat), chatUser (explicit)
 /// - セッション情報: authenticatedAt
 struct AuthSession: Codable, Equatable {
     // BetterAuth auth_user fields
@@ -16,15 +16,16 @@ struct AuthSession: Codable, Equatable {
     let email: String
 
     // Chat user profile (from users table)
-    let user: User  // Core/Entities/User を参照
+    let user: User  // Backward compatibility - may be placeholder
+    let chatUser: User?  // NEW: Explicit chat profile (nil if user has no chat profile)
 
     // Session metadata
     let authenticatedAt: Date
 
     /// Legacy userId for backward compatibility
-    /// Points to the chat user ID (user.id)
+    /// Points to the chat user ID (chatUser.id if available, otherwise user.id)
     var userId: String {
-        user.id
+        chatUser?.id ?? user.id
     }
 
     var isValid: Bool {

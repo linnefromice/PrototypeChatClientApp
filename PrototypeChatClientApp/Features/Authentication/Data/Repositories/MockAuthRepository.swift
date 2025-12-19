@@ -152,6 +152,7 @@ private struct MockUser {
             username: username,
             email: email,
             user: chatUser,
+            chatUser: chatUser,  // Mock always has chat user
             authenticatedAt: Date()
         )
     }

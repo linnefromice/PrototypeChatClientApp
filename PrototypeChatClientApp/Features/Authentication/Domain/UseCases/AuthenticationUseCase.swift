@@ -64,6 +64,7 @@ class AuthenticationUseCase: AuthenticationUseCaseProtocol {
             username: user.idAlias,  // Use idAlias as username
             email: "\(user.idAlias)@legacy.local",  // Placeholder email
             user: user,
+            chatUser: user,  // Legacy login has chat user
             authenticatedAt: Date()
         )
 
