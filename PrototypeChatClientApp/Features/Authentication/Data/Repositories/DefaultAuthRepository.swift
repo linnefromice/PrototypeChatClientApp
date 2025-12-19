@@ -230,9 +230,13 @@ private struct ErrorResponse: Decodable {
 // MARK: - Config
 
 private enum Config {
-    #if DEBUG
-    static let apiBaseURL = "http://localhost:3000"
-    #else
+    // Always use Cloudflare Workers (change to localhost:3000 for local development)
     static let apiBaseURL = "https://prototype-hono-drizzle-backend.linnefromice.workers.dev"
-    #endif
+
+    // Uncomment below to use localhost for debugging
+    // #if DEBUG
+    // static let apiBaseURL = "http://localhost:3000"
+    // #else
+    // static let apiBaseURL = "https://prototype-hono-drizzle-backend.linnefromice.workers.dev"
+    // #endif
 }
