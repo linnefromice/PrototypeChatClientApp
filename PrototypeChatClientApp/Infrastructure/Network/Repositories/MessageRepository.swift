@@ -26,9 +26,13 @@ class MessageRepository: MessageRepositoryProtocol {
             case .ok(let okResponse):
                 let messageDTOs = try okResponse.body.json
                 return messageDTOs.map { $0.toDomain() }
-            case .undocumented(statusCode: let code, _):
+            case .undocumented(statusCode: let code, let body):
                 let error = NetworkError.from(statusCode: code)
-                print("❌ [MessageRepository] fetchMessages failed - Status: \(code), Error: \(error)")
+                var bodyString = "N/A"
+                if let httpBody = body.body {
+                    bodyString = (try? await String(collecting: httpBody, upTo: 10000)) ?? "N/A"
+                }
+                print("❌ [MessageRepository] fetchMessages failed - Status: \(code), Error: \(error), Body: \(bodyString)")
                 throw error
             }
         } catch let error as NetworkError {
@@ -59,9 +63,13 @@ class MessageRepository: MessageRepositoryProtocol {
             case .created(let createdResponse):
                 let messageDTO = try createdResponse.body.json
                 return messageDTO.toDomain()
-            case .undocumented(statusCode: let code, _):
+            case .undocumented(statusCode: let code, let body):
                 let error = NetworkError.from(statusCode: code)
-                print("❌ [MessageRepository] sendMessage failed - Status: \(code), Error: \(error)")
+                var bodyString = "N/A"
+                if let httpBody = body.body {
+                    bodyString = (try? await String(collecting: httpBody, upTo: 10000)) ?? "N/A"
+                }
+                print("❌ [MessageRepository] sendMessage failed - Status: \(code), Error: \(error), Body: \(bodyString)")
                 throw error
             }
         } catch let error as NetworkError {

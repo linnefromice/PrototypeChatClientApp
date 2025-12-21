@@ -21,9 +21,13 @@ class ReactionRepository: ReactionRepositoryProtocol {
             case .ok(let okResponse):
                 let reactionDTOs = try okResponse.body.json
                 return reactionDTOs.map { $0.toDomain() }
-            case .undocumented(statusCode: let code, _):
+            case .undocumented(statusCode: let code, let body):
                 let error = NetworkError.from(statusCode: code)
-                print("❌ [ReactionRepository] fetchReactions failed - Status: \(code), Error: \(error)")
+                var bodyString = "N/A"
+                if let httpBody = body.body {
+                    bodyString = (try? await String(collecting: httpBody, upTo: 10000)) ?? "N/A"
+                }
+                print("❌ [ReactionRepository] fetchReactions failed - Status: \(code), Error: \(error), Body: \(bodyString)")
                 throw error
             }
         } catch let error as NetworkError {
@@ -54,9 +58,13 @@ class ReactionRepository: ReactionRepositoryProtocol {
             case .created(let createdResponse):
                 let reactionDTO = try createdResponse.body.json
                 return reactionDTO.toDomain()
-            case .undocumented(statusCode: let code, _):
+            case .undocumented(statusCode: let code, let body):
                 let error = NetworkError.from(statusCode: code)
-                print("❌ [ReactionRepository] addReaction failed - Status: \(code), Error: \(error)")
+                var bodyString = "N/A"
+                if let httpBody = body.body {
+                    bodyString = (try? await String(collecting: httpBody, upTo: 10000)) ?? "N/A"
+                }
+                print("❌ [ReactionRepository] addReaction failed - Status: \(code), Error: \(error), Body: \(bodyString)")
                 throw error
             }
         } catch let error as NetworkError {
@@ -82,9 +90,13 @@ class ReactionRepository: ReactionRepositoryProtocol {
                 // Successfully removed
                 print("✅ [ReactionRepository] removeReaction succeeded")
                 return
-            case .undocumented(statusCode: let code, _):
+            case .undocumented(statusCode: let code, let body):
                 let error = NetworkError.from(statusCode: code)
-                print("❌ [ReactionRepository] removeReaction failed - Status: \(code), Error: \(error)")
+                var bodyString = "N/A"
+                if let httpBody = body.body {
+                    bodyString = (try? await String(collecting: httpBody, upTo: 10000)) ?? "N/A"
+                }
+                print("❌ [ReactionRepository] removeReaction failed - Status: \(code), Error: \(error), Body: \(bodyString)")
                 throw error
             }
         } catch let error as NetworkError {

@@ -25,9 +25,13 @@ class ConversationRepository: ConversationRepositoryProtocol {
                     result.append(try await dto.toDomain())
                 }
                 return result
-            case .undocumented(statusCode: let code, _):
+            case .undocumented(statusCode: let code, let body):
                 let error = NetworkError.from(statusCode: code)
-                print("❌ [ConversationRepository] fetchConversations failed - Status: \(code), Error: \(error)")
+                var bodyString = "N/A"
+                if let httpBody = body.body {
+                    bodyString = (try? await String(collecting: httpBody, upTo: 10000)) ?? "N/A"
+                }
+                print("❌ [ConversationRepository] fetchConversations failed - Status: \(code), Error: \(error), Body: \(bodyString)")
                 throw error
             }
         } catch let error as NetworkError {
@@ -65,9 +69,13 @@ class ConversationRepository: ConversationRepositoryProtocol {
             case .created(let createdResponse):
                 let conversationDTO = try createdResponse.body.json
                 return try await conversationDTO.toDomain()
-            case .undocumented(statusCode: let code, _):
+            case .undocumented(statusCode: let code, let body):
                 let error = NetworkError.from(statusCode: code)
-                print("❌ [ConversationRepository] createConversation failed - Status: \(code), Error: \(error)")
+                var bodyString = "N/A"
+                if let httpBody = body.body {
+                    bodyString = (try? await String(collecting: httpBody, upTo: 10000)) ?? "N/A"
+                }
+                print("❌ [ConversationRepository] createConversation failed - Status: \(code), Error: \(error), Body: \(bodyString)")
                 throw error
             }
         } catch let error as NetworkError {

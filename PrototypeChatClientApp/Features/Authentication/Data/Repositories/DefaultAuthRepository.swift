@@ -39,6 +39,9 @@ class DefaultAuthRepository: AuthenticationRepositoryProtocol {
             return try authResponse.toAuthSession()
         case 400:
             // Parse error message to determine if it's duplicate username/email
+            let errorString = String(data: data, encoding: .utf8) ?? "Unknown error"
+            print("❌ [DefaultAuthRepository] signUp failed (400): \(errorString)")
+
             if let errorResponse = try? JSONDecoder().decode(ErrorResponse.self, from: data) {
                 if errorResponse.message.contains("username") || errorResponse.message.contains("Username") {
                     throw AuthenticationError.usernameAlreadyExists
@@ -48,10 +51,16 @@ class DefaultAuthRepository: AuthenticationRepositoryProtocol {
             }
             throw AuthenticationError.invalidCredentials
         case 401:
+            let errorString = String(data: data, encoding: .utf8) ?? "Unknown error"
+            print("❌ [DefaultAuthRepository] signUp failed (401): \(errorString)")
             throw AuthenticationError.invalidCredentials
         case 500...599:
+            let errorString = String(data: data, encoding: .utf8) ?? "Unknown error"
+            print("❌ [DefaultAuthRepository] signUp failed (\(httpResponse.statusCode)): \(errorString)")
             throw AuthenticationError.serverError
         default:
+            let errorString = String(data: data, encoding: .utf8) ?? "Unknown error"
+            print("❌ [DefaultAuthRepository] signUp failed (\(httpResponse.statusCode)): \(errorString)")
             throw AuthenticationError.networkError
         }
     }
@@ -72,6 +81,7 @@ class DefaultAuthRepository: AuthenticationRepositoryProtocol {
         let (data, response) = try await session.data(for: request)
 
         guard let httpResponse = response as? HTTPURLResponse else {
+            print("❌ [DefaultAuthRepository] signIn - Invalid HTTP response")
             throw AuthenticationError.networkError
         }
 
@@ -80,10 +90,16 @@ class DefaultAuthRepository: AuthenticationRepositoryProtocol {
             let authResponse = try JSONDecoder().decode(AuthResponse.self, from: data)
             return try authResponse.toAuthSession()
         case 401:
+            let errorString = String(data: data, encoding: .utf8) ?? "Unknown error"
+            print("❌ [DefaultAuthRepository] signIn failed (401): \(errorString)")
             throw AuthenticationError.invalidCredentials
         case 500...599:
+            let errorString = String(data: data, encoding: .utf8) ?? "Unknown error"
+            print("❌ [DefaultAuthRepository] signIn failed (\(httpResponse.statusCode)): \(errorString)")
             throw AuthenticationError.serverError
         default:
+            let errorString = String(data: data, encoding: .utf8) ?? "Unknown error"
+            print("❌ [DefaultAuthRepository] signIn failed (\(httpResponse.statusCode)): \(errorString)")
             throw AuthenticationError.networkError
         }
     }
@@ -97,6 +113,7 @@ class DefaultAuthRepository: AuthenticationRepositoryProtocol {
         let (data, response) = try await session.data(for: request)
 
         guard let httpResponse = response as? HTTPURLResponse else {
+            print("❌ [DefaultAuthRepository] getSession - Invalid HTTP response")
             throw AuthenticationError.networkError
         }
 
@@ -106,10 +123,15 @@ class DefaultAuthRepository: AuthenticationRepositoryProtocol {
             return try authResponse.toAuthSession()
         case 401:
             // Session expired or invalid
+            print("ℹ️ [DefaultAuthRepository] getSession - No valid session (401)")
             return nil
         case 500...599:
+            let errorString = String(data: data, encoding: .utf8) ?? "Unknown error"
+            print("❌ [DefaultAuthRepository] getSession failed (\(httpResponse.statusCode)): \(errorString)")
             throw AuthenticationError.serverError
         default:
+            let errorString = String(data: data, encoding: .utf8) ?? "Unknown error"
+            print("❌ [DefaultAuthRepository] getSession failed (\(httpResponse.statusCode)): \(errorString)")
             throw AuthenticationError.networkError
         }
     }
