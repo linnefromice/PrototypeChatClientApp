@@ -41,8 +41,9 @@ class MessageRepository: MessageRepositoryProtocol {
     }
 
     func sendMessage(conversationId: String, senderUserId: String, text: String) async throws -> Message {
+        // Pass nil for senderUserId to use authenticated user from cookie
         let request = Components.Schemas.SendMessageRequest.from(
-            senderUserId: senderUserId,
+            senderUserId: nil,  // Backend will use authenticated user from cookie
             text: text
         )
 
