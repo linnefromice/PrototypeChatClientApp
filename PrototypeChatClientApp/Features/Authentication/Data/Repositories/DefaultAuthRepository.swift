@@ -7,8 +7,9 @@ class DefaultAuthRepository: AuthenticationRepositoryProtocol {
     private let baseURL: String
     private let session: URLSession
 
-    init(baseURL: String = Config.apiBaseURL, session: URLSession = NetworkConfiguration.session) {
-        self.baseURL = baseURL
+    init(baseURL: String? = nil, session: URLSession = NetworkConfiguration.session) {
+        // Use AppEnvironment.current.baseURL if baseURL is not provided
+        self.baseURL = baseURL ?? AppEnvironment.current.baseURL.absoluteString
         self.session = session
     }
 
