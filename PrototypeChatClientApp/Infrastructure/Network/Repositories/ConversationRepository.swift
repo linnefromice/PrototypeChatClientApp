@@ -10,9 +10,8 @@ class ConversationRepository: ConversationRepositoryProtocol {
     }
 
     func fetchConversations(userId: String) async throws -> [ConversationDetail] {
-        let input = Operations.get_sol_conversations.Input(
-            query: .init(userId: userId)
-        )
+        // userId is no longer needed as query parameter - backend uses authenticated user from cookie
+        let input = Operations.get_sol_conversations.Input()
 
         do {
             let response = try await client.get_sol_conversations(input)

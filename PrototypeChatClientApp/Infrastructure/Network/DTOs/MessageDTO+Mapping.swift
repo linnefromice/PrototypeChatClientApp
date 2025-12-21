@@ -17,12 +17,11 @@ extension Components.Schemas.Message {
 }
 
 extension Components.Schemas.SendMessageRequest {
-    static func from(senderUserId: String?, text: String) -> Self {
+    static func from(text: String) -> Self {
         Self(
-            senderUserId: senderUserId,  // nil means backend will use authenticated user
             text: text,
-            replyToMessageId: nil,
-            systemEvent: nil
+            replyToMessageId: nil
+            // senderUserId and systemEvent removed from spec - backend uses authenticated user
         )
     }
 }

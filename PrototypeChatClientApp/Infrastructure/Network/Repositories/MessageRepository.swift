@@ -10,10 +10,10 @@ class MessageRepository: MessageRepositoryProtocol {
     }
 
     func fetchMessages(conversationId: String, userId: String, limit: Int) async throws -> [Message] {
+        // userId is no longer needed as query parameter - backend uses authenticated user from cookie
         let input = Operations.get_sol_conversations_sol__lcub_id_rcub__sol_messages.Input(
             path: .init(id: conversationId),
             query: .init(
-                userId: userId,
                 limit: limit,
                 before: nil
             )
@@ -45,11 +45,8 @@ class MessageRepository: MessageRepositoryProtocol {
     }
 
     func sendMessage(conversationId: String, senderUserId: String, text: String) async throws -> Message {
-        // Pass nil for senderUserId to use authenticated user from cookie
-        let request = Components.Schemas.SendMessageRequest.from(
-            senderUserId: nil,  // Backend will use authenticated user from cookie
-            text: text
-        )
+        // senderUserId is no longer needed - backend uses authenticated user from cookie
+        let request = Components.Schemas.SendMessageRequest.from(text: text)
 
         let input = Operations.post_sol_conversations_sol__lcub_id_rcub__sol_messages.Input(
             path: .init(id: conversationId),

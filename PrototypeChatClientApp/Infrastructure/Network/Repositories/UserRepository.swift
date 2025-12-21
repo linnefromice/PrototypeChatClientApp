@@ -74,9 +74,14 @@ class UserRepository: UserRepositoryProtocol {
     }
 
     func createUser(name: String, avatarUrl: String?) async throws -> User {
+        // Note: idAlias is required in the latest spec
+        // For now, we generate it from name (lowercase, replace spaces with hyphens)
+        let idAlias = name.lowercased().replacingOccurrences(of: " ", with: "-")
+
         let input = Operations.post_sol_users.Input(
             body: .json(
                 Components.Schemas.CreateUserRequest(
+                    idAlias: idAlias,
                     name: name,
                     avatarUrl: avatarUrl
                 )

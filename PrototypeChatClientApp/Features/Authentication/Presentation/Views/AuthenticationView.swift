@@ -74,16 +74,40 @@ struct AuthenticationPresenter: View {
                             .font(.subheadline)
                             .fontWeight(.medium)
 
-                        SecureField("パスワードを入力", text: $viewModel.password)
-                            .textFieldStyle(.roundedBorder)
-                            .textInputAutocapitalization(.never)
-                            .autocorrectionDisabled()
-                            .disabled(viewModel.isAuthenticating)
-                            .onSubmit {
-                                Task {
-                                    await viewModel.login()
-                                }
+                        HStack {
+                            if viewModel.isPasswordVisible {
+                                TextField("パスワードを入力", text: $viewModel.password)
+                                    .textFieldStyle(.roundedBorder)
+                                    .textInputAutocapitalization(.never)
+                                    .autocorrectionDisabled()
+                                    .disabled(viewModel.isAuthenticating)
+                                    .onSubmit {
+                                        Task {
+                                            await viewModel.login()
+                                        }
+                                    }
+                            } else {
+                                SecureField("パスワードを入力", text: $viewModel.password)
+                                    .textFieldStyle(.roundedBorder)
+                                    .textInputAutocapitalization(.never)
+                                    .autocorrectionDisabled()
+                                    .disabled(viewModel.isAuthenticating)
+                                    .onSubmit {
+                                        Task {
+                                            await viewModel.login()
+                                        }
+                                    }
                             }
+
+                            Button {
+                                viewModel.togglePasswordVisibility()
+                            } label: {
+                                Image(systemName: viewModel.isPasswordVisible ? "eye.slash.fill" : "eye.fill")
+                                    .foregroundColor(.gray)
+                                    .frame(width: 44, height: 44)
+                            }
+                            .disabled(viewModel.isAuthenticating)
+                        }
                     }
 
                     // エラーメッセージ

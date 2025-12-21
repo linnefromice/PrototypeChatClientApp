@@ -20,6 +20,7 @@ class AuthenticationViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var isAuthenticated: Bool = false
     @Published var isRegistering: Bool = false
+    @Published var isPasswordVisible: Bool = false
 
     // MARK: - Dependencies
     private let authenticationUseCase: AuthenticationUseCaseProtocol
@@ -189,6 +190,11 @@ class AuthenticationViewModel: ObservableObject {
     func toggleRegistrationMode() {
         isRegistering.toggle()
         errorMessage = nil
+    }
+
+    /// Toggle password visibility
+    func togglePasswordVisibility() {
+        isPasswordVisible.toggle()
     }
 
     /// 最後に使用したUser IDを取得（後方互換性のため維持）

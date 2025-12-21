@@ -96,5 +96,7 @@ private struct ProfileResponse: Decodable {
 
 private enum Config {
     // Always use Cloudflare Workers (change to localhost:3000 for local development)
-    static let apiBaseURL = "https://prototype-hono-drizzle-backend.linnefromice.workers.dev"
+    static let apiBaseURL = "http://localhost:8787"
+    
+    // static let apiBaseURL = "https://prototype-hono-drizzle-backend.linnefromice.workers.dev"
 }

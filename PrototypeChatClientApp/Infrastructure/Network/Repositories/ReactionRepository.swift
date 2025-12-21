@@ -21,6 +21,9 @@ class ReactionRepository: ReactionRepositoryProtocol {
             case .ok(let okResponse):
                 let reactionDTOs = try okResponse.body.json
                 return reactionDTOs.map { $0.toDomain() }
+            case .notFound:
+                print("❌ [ReactionRepository] fetchReactions - Message not found")
+                throw NetworkError.notFound
             case .undocumented(statusCode: let code, let body):
                 let error = NetworkError.from(statusCode: code)
                 var bodyString = "N/A"
@@ -40,11 +43,8 @@ class ReactionRepository: ReactionRepositoryProtocol {
     }
 
     func addReaction(messageId: String, userId: String, emoji: String) async throws -> Reaction {
-        // Pass nil for userId to use authenticated user from cookie
-        let request = Components.Schemas.ReactionRequest.from(
-            userId: nil,  // Backend will use authenticated user from cookie
-            emoji: emoji
-        )
+        // userId is no longer needed - backend uses authenticated user from cookie
+        let request = Components.Schemas.ReactionRequest.from(emoji: emoji)
 
         let input = Operations.post_sol_messages_sol__lcub_id_rcub__sol_reactions.Input(
             path: .init(id: messageId),
@@ -77,9 +77,9 @@ class ReactionRepository: ReactionRepositoryProtocol {
     }
 
     func removeReaction(messageId: String, userId: String, emoji: String) async throws {
+        // userId is no longer needed as query parameter - backend uses authenticated user from cookie
         let input = Operations.delete_sol_messages_sol__lcub_id_rcub__sol_reactions_sol__lcub_emoji_rcub_.Input(
-            path: .init(id: messageId, emoji: emoji),
-            query: .init(userId: userId)
+            path: .init(id: messageId, emoji: emoji)
         )
 
         do {
