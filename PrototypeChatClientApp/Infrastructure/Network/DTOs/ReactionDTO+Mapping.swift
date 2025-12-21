@@ -14,9 +14,9 @@ extension Components.Schemas.Reaction {
 }
 
 extension Components.Schemas.ReactionRequest {
-    static func from(userId: String, emoji: String) -> Self {
+    static func from(userId: String?, emoji: String) -> Self {
         Self(
-            userId: userId,
+            userId: userId,  // nil means backend will use authenticated user from cookie
             emoji: emoji
         )
     }

@@ -36,8 +36,9 @@ class ReactionRepository: ReactionRepositoryProtocol {
     }
 
     func addReaction(messageId: String, userId: String, emoji: String) async throws -> Reaction {
+        // Pass nil for userId to use authenticated user from cookie
         let request = Components.Schemas.ReactionRequest.from(
-            userId: userId,
+            userId: nil,  // Backend will use authenticated user from cookie
             emoji: emoji
         )
 
