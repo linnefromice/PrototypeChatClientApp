@@ -25,7 +25,8 @@ class ConversationUseCase {
         currentUserId: String,
         targetUserId: String
     ) async throws -> ConversationDetail {
-        try await conversationRepository.createConversation(
+        print("ℹ️ [ConversationUseCase] Creating direct conversation - currentUserId: \(currentUserId), targetUserId: \(targetUserId)")
+        return try await conversationRepository.createConversation(
             type: .direct,
             participantIds: [currentUserId, targetUserId],
             name: nil

@@ -218,11 +218,13 @@ class AuthenticationUseCase: AuthenticationUseCaseProtocol {
 
     /// Fetch complete profile after authentication to get proper chat user ID
     private func fetchCompleteProfile(baseSession: AuthSession) async throws -> AuthSession {
+        print("ℹ️ [AuthenticationUseCase] Fetching complete profile for user: \(baseSession.username)")
         do {
             let profile = try await profileRepository.fetchProfile()
 
             // If chat user is available, update the session
             if let chatUser = profile.chatUser {
+                print("✅ [AuthenticationUseCase] Chat user found - ID: \(chatUser.id)")
                 return AuthSession(
                     authUserId: profile.authUserId,
                     username: profile.username,
@@ -232,6 +234,7 @@ class AuthenticationUseCase: AuthenticationUseCaseProtocol {
                     authenticatedAt: baseSession.authenticatedAt
                 )
             } else {
+                print("⚠️ [AuthenticationUseCase] No chat user found, using base session")
                 // No chat user available, return base session
                 return baseSession
             }

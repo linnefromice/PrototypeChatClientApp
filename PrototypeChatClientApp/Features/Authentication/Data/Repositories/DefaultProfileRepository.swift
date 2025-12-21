@@ -21,8 +21,11 @@ class DefaultProfileRepository: ProfileRepositoryProtocol {
         let (data, response) = try await session.data(for: request)
 
         guard let httpResponse = response as? HTTPURLResponse else {
+            print("❌ [DefaultProfileRepository] Invalid HTTP response")
             throw AuthenticationError.networkError
         }
+
+        print("ℹ️ [DefaultProfileRepository] fetchProfile status: \(httpResponse.statusCode)")
 
         switch httpResponse.statusCode {
         case 200...299:
@@ -36,6 +39,7 @@ class DefaultProfileRepository: ProfileRepositoryProtocol {
                     createdAt: Date()
                 )
             }
+            print("✅ [DefaultProfileRepository] Profile fetched - authUserId: \(profileResponse.auth.id), chatUser: \(chatUser?.id ?? "nil")")
             return (
                 authUserId: profileResponse.auth.id,
                 username: profileResponse.auth.username,
@@ -44,10 +48,17 @@ class DefaultProfileRepository: ProfileRepositoryProtocol {
                 chatUser: chatUser
             )
         case 401:
+            print("❌ [DefaultProfileRepository] Unauthorized (401)")
             throw AuthenticationError.invalidCredentials
         case 500...599:
+            if let errorString = String(data: data, encoding: .utf8) {
+                print("❌ [DefaultProfileRepository] Server error (5xx): \(errorString)")
+            }
             throw AuthenticationError.serverError
         default:
+            if let errorString = String(data: data, encoding: .utf8) {
+                print("❌ [DefaultProfileRepository] Unexpected status \(httpResponse.statusCode): \(errorString)")
+            }
             throw AuthenticationError.networkError
         }
     }

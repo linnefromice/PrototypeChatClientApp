@@ -119,17 +119,25 @@ class DefaultAuthRepository: AuthenticationRepositoryProtocol {
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
-        let (_, response) = try await session.data(for: request)
+        let (data, response) = try await session.data(for: request)
 
         guard let httpResponse = response as? HTTPURLResponse else {
+            print("❌ [DefaultAuthRepository] signOut - Invalid HTTP response")
             throw AuthenticationError.networkError
         }
 
+        print("ℹ️ [DefaultAuthRepository] signOut status: \(httpResponse.statusCode)")
+
         guard (200...299).contains(httpResponse.statusCode) else {
+            if let errorString = String(data: data, encoding: .utf8) {
+                print("❌ [DefaultAuthRepository] signOut failed (\(httpResponse.statusCode)): \(errorString)")
+            }
             throw AuthenticationError.serverError
         }
 
+        print("✅ [DefaultAuthRepository] signOut succeeded")
         // Cookies are cleared automatically by the backend
     }
 }
