@@ -120,6 +120,10 @@ class DefaultAuthRepository: AuthenticationRepositoryProtocol {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(baseURL, forHTTPHeaderField: "Origin")  // Required for CSRF protection
+
+        // Send empty JSON body as required by the API
+        request.httpBody = try JSONEncoder().encode([String: String]())
 
         let (data, response) = try await session.data(for: request)
 
