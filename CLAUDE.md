@@ -255,8 +255,26 @@ AppConfig.printConfiguration()
 #endif
 ```
 
+**Command Line Usage:**
+
+```bash
+# Localhost backend (Debug)
+make run-debug
+# or
+make run CONFIGURATION=Debug
+
+# Production backend (Development)
+make run-dev
+# or
+make run CONFIGURATION=Development
+
+# Check current configuration
+make info
+```
+
 **See Also:**
-- Detailed guide: `Docs/ENVIRONMENT_SETUP.md`
+- Build configurations guide: `Docs/BUILD_CONFIGURATIONS.md`
+- Environment setup: `Docs/ENVIRONMENT_SETUP.md`
 - AppConfig struct: `Infrastructure/Environment/AppConfig.swift`
 
 ## Implementation Rules
