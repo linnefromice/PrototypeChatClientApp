@@ -5,7 +5,13 @@ protocol MessageRepositoryProtocol {
     func sendMessage(conversationId: String, senderUserId: String, text: String) async throws -> Message
 }
 
-class MessageUseCase {
+/// メッセージに関するユースケースのプロトコル
+protocol MessageUseCaseProtocol {
+    func fetchMessages(conversationId: String, userId: String, limit: Int) async throws -> [Message]
+    func sendMessage(conversationId: String, senderUserId: String, text: String) async throws -> Message
+}
+
+class MessageUseCase: MessageUseCaseProtocol {
     private let messageRepository: MessageRepositoryProtocol
 
     init(messageRepository: MessageRepositoryProtocol) {

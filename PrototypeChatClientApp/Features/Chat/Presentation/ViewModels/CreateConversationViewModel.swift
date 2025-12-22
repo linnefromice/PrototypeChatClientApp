@@ -4,8 +4,8 @@ import Combine
 /// チャット作成画面のViewModel
 class CreateConversationViewModel: ObservableObject {
     // MARK: - Properties
-    private let conversationUseCase: ConversationUseCase
-    private let userListUseCase: UserListUseCase
+    private let conversationUseCase: ConversationUseCaseProtocol
+    private let userListUseCase: UserListUseCaseProtocol
     private let currentUserId: String
 
     @Published var availableUsers: [User] = []
@@ -20,8 +20,8 @@ class CreateConversationViewModel: ObservableObject {
 
     // MARK: - Initialization
     init(
-        conversationUseCase: ConversationUseCase,
-        userListUseCase: UserListUseCase,
+        conversationUseCase: ConversationUseCaseProtocol,
+        userListUseCase: UserListUseCaseProtocol,
         currentUserId: String
     ) {
         self.conversationUseCase = conversationUseCase

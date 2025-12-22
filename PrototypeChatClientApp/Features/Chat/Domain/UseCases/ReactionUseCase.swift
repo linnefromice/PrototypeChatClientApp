@@ -1,6 +1,15 @@
 import Foundation
 
-class ReactionUseCase {
+/// リアクションに関するユースケースのプロトコル
+protocol ReactionUseCaseProtocol {
+    func addReaction(messageId: String, userId: String, emoji: String) async throws -> Reaction
+    func removeReaction(messageId: String, userId: String, emoji: String) async throws
+    func fetchReactions(messageId: String) async throws -> [Reaction]
+    func replaceReaction(messageId: String, userId: String, oldEmoji: String?, newEmoji: String) async throws -> Reaction
+    func computeSummaries(reactions: [Reaction], currentUserId: String) -> [ReactionSummary]
+}
+
+class ReactionUseCase: ReactionUseCaseProtocol {
     private let reactionRepository: ReactionRepositoryProtocol
 
     init(reactionRepository: ReactionRepositoryProtocol) {

@@ -4,7 +4,7 @@ import Combine
 /// 会話一覧画面のViewModel
 class ConversationListViewModel: ObservableObject {
     // MARK: - Properties
-    private let conversationUseCase: ConversationUseCase
+    private let conversationUseCase: ConversationUseCaseProtocol
     let currentUserId: String
 
     @Published var conversations: [ConversationDetail] = []
@@ -14,7 +14,7 @@ class ConversationListViewModel: ObservableObject {
 
     // MARK: - Initialization
     init(
-        conversationUseCase: ConversationUseCase,
+        conversationUseCase: ConversationUseCaseProtocol,
         currentUserId: String
     ) {
         self.conversationUseCase = conversationUseCase

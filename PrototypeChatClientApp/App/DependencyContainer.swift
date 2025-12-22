@@ -62,22 +62,22 @@ final class DependencyContainer: ObservableObject {
     }()
 
     /// 会話UseCase
-    lazy var conversationUseCase: ConversationUseCase = {
+    lazy var conversationUseCase: ConversationUseCaseProtocol = {
         ConversationUseCase(conversationRepository: conversationRepository)
     }()
 
     /// ユーザー一覧UseCase
-    lazy var userListUseCase: UserListUseCase = {
+    lazy var userListUseCase: UserListUseCaseProtocol = {
         UserListUseCase(userRepository: userRepository)
     }()
 
     /// メッセージUseCase
-    lazy var messageUseCase: MessageUseCase = {
+    lazy var messageUseCase: MessageUseCaseProtocol = {
         MessageUseCase(messageRepository: messageRepository)
     }()
 
     /// リアクションUseCase
-    lazy var reactionUseCase: ReactionUseCase = {
+    lazy var reactionUseCase: ReactionUseCaseProtocol = {
         ReactionUseCase(reactionRepository: reactionRepository)
     }()
 

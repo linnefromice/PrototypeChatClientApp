@@ -1,8 +1,13 @@
 import Foundation
 
+/// ユーザー一覧に関するユースケースのプロトコル
+protocol UserListUseCaseProtocol {
+    func fetchAvailableUsers(excludingUserId currentUserId: String) async throws -> [User]
+}
+
 /// ユーザー一覧に関するユースケース
 /// チャット作成時のユーザー選択に使用
-class UserListUseCase {
+class UserListUseCase: UserListUseCaseProtocol {
     private let userRepository: UserRepositoryProtocol
 
     init(userRepository: UserRepositoryProtocol) {
