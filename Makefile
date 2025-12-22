@@ -85,8 +85,32 @@ else
 endif
 	@echo "$(COLOR_SUCCESS)✓ Build completed!$(COLOR_RESET)"
 
+build-dev: ## Build with Development configuration (production backend)
+	@echo "$(COLOR_INFO)Building with Development configuration$(COLOR_RESET)"
+	@$(MAKE) build CONFIGURATION=Development
+
+build-debug: ## Build with Debug configuration (localhost backend)
+	@echo "$(COLOR_INFO)Building with Debug configuration$(COLOR_RESET)"
+	@$(MAKE) build CONFIGURATION=Debug
+
+build-release: ## Build with Release configuration (production backend)
+	@echo "$(COLOR_INFO)Building with Release configuration$(COLOR_RESET)"
+	@$(MAKE) build CONFIGURATION=Release
+
 run: build boot install launch ## Build and run app on simulator
 	@echo "$(COLOR_SUCCESS)✓ App is running on $(DEVICE)$(COLOR_RESET)"
+
+run-dev: ## Run app with Development configuration (production backend)
+	@echo "$(COLOR_INFO)Running with Development configuration (Production backend)$(COLOR_RESET)"
+	@$(MAKE) run CONFIGURATION=Development
+
+run-debug: ## Run app with Debug configuration (localhost backend)
+	@echo "$(COLOR_INFO)Running with Debug configuration (Localhost backend)$(COLOR_RESET)"
+	@$(MAKE) run CONFIGURATION=Debug
+
+run-release: ## Run app with Release configuration (production backend)
+	@echo "$(COLOR_INFO)Running with Release configuration (Production backend)$(COLOR_RESET)"
+	@$(MAKE) run CONFIGURATION=Release
 
 clean: ## Clean build artifacts
 	@echo "$(COLOR_INFO)Cleaning build artifacts...$(COLOR_RESET)"
@@ -260,6 +284,14 @@ info: ## Show project information
 	@echo "  Device: $(DEVICE)"
 	@echo "  Configuration: $(CONFIGURATION)"
 	@echo "  Bundle ID: $(BUNDLE_ID)"
+	@echo ""
+	@echo "$(COLOR_INFO)Backend Configuration:$(COLOR_RESET)"
+	@BACKEND_URL=$$(xcodebuild -project $(WORKSPACE) -showBuildSettings -configuration $(CONFIGURATION) 2>/dev/null | grep -m 1 "BACKEND_URL" | sed 's/.*= //'); \
+	if [ -n "$$BACKEND_URL" ]; then \
+		echo "  Backend URL: $$BACKEND_URL"; \
+	else \
+		echo "  $(COLOR_WARNING)BACKEND_URL not configured$(COLOR_RESET)"; \
+	fi
 	@echo ""
 	@echo "$(COLOR_INFO)Simulator:$(COLOR_RESET)"
 	@if [ -n "$(SIMULATOR_ID)" ]; then \

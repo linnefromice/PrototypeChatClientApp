@@ -11,6 +11,13 @@ import SwiftUI
 struct PrototypeChatClientAppApp: App {
     @StateObject private var container = DependencyContainer.shared
 
+    init() {
+        #if DEBUG
+        // Print configuration on app launch
+        AppConfig.printConfiguration()
+        #endif
+    }
+
     var body: some Scene {
         WindowGroup {
             RootView()

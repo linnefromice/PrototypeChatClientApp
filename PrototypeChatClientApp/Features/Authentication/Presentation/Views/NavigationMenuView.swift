@@ -2,7 +2,7 @@ import SwiftUI
 
 /// ナビゲーションメニュービュー
 struct NavigationMenuView: View {
-    @Environment(\.dismiss) var dismiss
+    @SwiftUI.Environment(\.dismiss) private var dismiss
     @EnvironmentObject var authViewModel: AuthenticationViewModel
     let onLogout: () -> Void
 
