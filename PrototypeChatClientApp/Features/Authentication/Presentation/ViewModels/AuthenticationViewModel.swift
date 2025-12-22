@@ -76,6 +76,12 @@ class AuthenticationViewModel: ObservableObject {
                 username: username,
                 password: password
             )
+            print("✅ [AuthenticationViewModel] Login successful")
+            print("   authUserId: \(session.authUserId)")
+            print("   user.id: \(session.user.id)")
+            print("   chatUser?.id: \(session.chatUser?.id ?? "nil")")
+            print("   userId (computed): \(session.userId)")
+
             self.currentSession = session
             self.isAuthenticated = true
             self.password = "" // Clear password for security

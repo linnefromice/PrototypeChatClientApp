@@ -86,9 +86,24 @@ class DefaultAuthRepository: AuthenticationRepositoryProtocol {
             throw AuthenticationError.networkError
         }
 
+        #if DEBUG
+        // Debug: Print response headers
+        print("📥 [DefaultAuthRepository] signIn response:")
+        print("   Status: \(httpResponse.statusCode)")
+        print("   Headers: \(httpResponse.allHeaderFields)")
+        #endif
+
         switch httpResponse.statusCode {
         case 200...299:
             let authResponse = try JSONDecoder().decode(AuthResponse.self, from: data)
+
+            #if DEBUG
+            // Debug: Print cookies after successful login
+            if let url = URL(string: baseURL) {
+                NetworkConfiguration.printCookies(for: url)
+            }
+            #endif
+
             return try authResponse.toAuthSession()
         case 401:
             let errorString = String(data: data, encoding: .utf8) ?? "Unknown error"

@@ -86,9 +86,9 @@ private struct ProfileResponse: Decodable {
 
         enum CodingKeys: String, CodingKey {
             case id
-            case idAlias = "id_alias"
+            case idAlias  // Backend returns camelCase
             case name
-            case avatarUrl = "avatar_url"
+            case avatarUrl  // Backend returns camelCase
         }
     }
 }

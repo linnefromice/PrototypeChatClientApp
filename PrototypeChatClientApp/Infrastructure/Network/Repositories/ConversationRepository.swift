@@ -13,6 +13,13 @@ class ConversationRepository: ConversationRepositoryProtocol {
         // userId is no longer needed as query parameter - backend uses authenticated user from cookie
         let input = Operations.get_sol_conversations.Input()
 
+        #if DEBUG
+        // Debug: Print cookies before API call
+        if let url = URL(string: "http://localhost:8787") {
+            NetworkConfiguration.printCookies(for: url)
+        }
+        #endif
+
         do {
             let response = try await client.get_sol_conversations(input)
 

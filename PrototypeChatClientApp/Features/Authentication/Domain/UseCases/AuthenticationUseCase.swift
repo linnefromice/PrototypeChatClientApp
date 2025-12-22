@@ -219,13 +219,16 @@ class AuthenticationUseCase: AuthenticationUseCaseProtocol {
     /// Fetch complete profile after authentication to get proper chat user ID
     private func fetchCompleteProfile(baseSession: AuthSession) async throws -> AuthSession {
         print("ℹ️ [AuthenticationUseCase] Fetching complete profile for user: \(baseSession.username)")
+        print("ℹ️ [AuthenticationUseCase] Base session - authUserId: \(baseSession.authUserId), user.id: \(baseSession.user.id), chatUser: \(baseSession.chatUser?.id ?? "nil")")
+
         do {
             let profile = try await profileRepository.fetchProfile()
+            print("ℹ️ [AuthenticationUseCase] Profile fetched - authUserId: \(profile.authUserId), chatUser: \(profile.chatUser?.id ?? "nil")")
 
             // If chat user is available, update the session
             if let chatUser = profile.chatUser {
-                print("✅ [AuthenticationUseCase] Chat user found - ID: \(chatUser.id)")
-                return AuthSession(
+                print("✅ [AuthenticationUseCase] Chat user found - ID: \(chatUser.id), idAlias: \(chatUser.idAlias)")
+                let updatedSession = AuthSession(
                     authUserId: profile.authUserId,
                     username: profile.username,
                     email: profile.email,
@@ -233,8 +236,11 @@ class AuthenticationUseCase: AuthenticationUseCaseProtocol {
                     chatUser: chatUser,
                     authenticatedAt: baseSession.authenticatedAt
                 )
+                print("✅ [AuthenticationUseCase] Updated session - userId (computed): \(updatedSession.userId)")
+                return updatedSession
             } else {
-                print("⚠️ [AuthenticationUseCase] No chat user found, using base session")
+                print("⚠️ [AuthenticationUseCase] No chat user found in profile response")
+                print("⚠️ [AuthenticationUseCase] User needs to create a chat profile first")
                 // No chat user available, return base session
                 return baseSession
             }

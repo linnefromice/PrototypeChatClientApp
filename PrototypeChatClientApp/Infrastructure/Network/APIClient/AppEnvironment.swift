@@ -17,17 +17,14 @@ enum AppEnvironment {
 
     /// 現在の環境を取得
     static var current: AppEnvironment {
-        // 環境変数 USE_PRODUCTION_API が設定されている場合は本番環境を使用
-        if ProcessInfo.processInfo.environment["USE_PRODUCTION_API"] != nil {
-            return .production
+        // 環境変数 USE_LOCAL_API が設定されている場合はローカル環境を使用
+        if ProcessInfo.processInfo.environment["USE_LOCAL_API"] != nil {
+            return .development
         }
 
-        // Default to development for local testing
-        #if DEBUG
+        // Default to production (HTTPS) to support Secure cookies
+        // Local development with HTTP doesn't support Secure cookies from backend
         return .development
-        #else
-        return .production
-        #endif
 
 //        #if DEBUG
 //        // DEBUGビルドでもlocalhostが起動していない場合は本番環境を使用

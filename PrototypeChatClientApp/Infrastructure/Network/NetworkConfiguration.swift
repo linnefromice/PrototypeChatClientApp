@@ -10,6 +10,10 @@ enum NetworkConfiguration {
         configuration.httpCookieAcceptPolicy = .always
         configuration.httpCookieStorage = HTTPCookieStorage.shared
         configuration.httpShouldSetCookies = true
+
+        // Note: Secure cookies over HTTP localhost are handled by the backend
+        // iOS will reject Secure cookies over HTTP, so ensure backend doesn't set Secure in dev
+
         return configuration
     }
 

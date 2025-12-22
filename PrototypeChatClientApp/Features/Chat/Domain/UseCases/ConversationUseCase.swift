@@ -18,14 +18,36 @@ class ConversationUseCase {
 
     /// 1:1チャットを作成
     /// - Parameters:
-    ///   - currentUserId: 現在のユーザーID
-    ///   - targetUserId: 相手のユーザーID
+    ///   - currentUserId: 現在のユーザーID (should be chatUser.id in UUID format)
+    ///   - targetUserId: 相手のユーザーID (should be chatUser.id in UUID format)
     /// - Returns: 作成された会話詳細
     func createDirectConversation(
         currentUserId: String,
         targetUserId: String
     ) async throws -> ConversationDetail {
-        print("ℹ️ [ConversationUseCase] Creating direct conversation - currentUserId: \(currentUserId), targetUserId: \(targetUserId)")
+        print("ℹ️ [ConversationUseCase] Creating direct conversation")
+        print("   currentUserId: \(currentUserId)")
+        print("   targetUserId: \(targetUserId)")
+        print("   participantIds: [\(currentUserId), \(targetUserId)]")
+
+        // Validate that IDs are in UUID format
+        let uuidPattern = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+        let isCurrentUserIdUUID = (try? NSRegularExpression(pattern: uuidPattern))?.firstMatch(
+            in: currentUserId,
+            range: NSRange(location: 0, length: currentUserId.utf16.count)
+        ) != nil
+        let isTargetUserIdUUID = (try? NSRegularExpression(pattern: uuidPattern))?.firstMatch(
+            in: targetUserId,
+            range: NSRange(location: 0, length: targetUserId.utf16.count)
+        ) != nil
+
+        if !isCurrentUserIdUUID {
+            print("❌ [ConversationUseCase] currentUserId is NOT a valid UUID! This should be chatUser.id, not authUser.id")
+        }
+        if !isTargetUserIdUUID {
+            print("❌ [ConversationUseCase] targetUserId is NOT a valid UUID! This should be chatUser.id, not authUser.id")
+        }
+
         return try await conversationRepository.createConversation(
             type: .direct,
             participantIds: [currentUserId, targetUserId],
