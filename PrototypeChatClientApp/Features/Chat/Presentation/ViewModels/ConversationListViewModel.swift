@@ -2,6 +2,7 @@ import Foundation
 import Combine
 
 /// 会話一覧画面のViewModel
+@MainActor
 class ConversationListViewModel: ObservableObject {
     // MARK: - Properties
     private let conversationUseCase: ConversationUseCaseProtocol
@@ -23,7 +24,6 @@ class ConversationListViewModel: ObservableObject {
 
     // MARK: - Methods
     /// 会話一覧を読み込む
-    @MainActor
     func loadConversations() async {
         isLoading = true
         errorMessage = nil
