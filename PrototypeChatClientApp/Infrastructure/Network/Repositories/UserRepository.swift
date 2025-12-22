@@ -24,9 +24,13 @@ class UserRepository: UserRepositoryProtocol {
             case .notFound:
                 print("❌ [UserRepository] fetchUser failed - User not found: \(id)")
                 throw NetworkError.notFound
-            case .undocumented(statusCode: let code, _):
+            case .undocumented(statusCode: let code, let body):
                 let error = NetworkError.from(statusCode: code)
-                print("❌ [UserRepository] fetchUser failed - Status: \(code), Error: \(error)")
+                var bodyString = "N/A"
+                if let httpBody = body.body {
+                    bodyString = (try? await String(collecting: httpBody, upTo: 10000)) ?? "N/A"
+                }
+                print("❌ [UserRepository] fetchUser failed - Status: \(code), Error: \(error), Body: \(bodyString)")
                 throw error
             }
         } catch let error as NetworkError {
@@ -49,11 +53,15 @@ class UserRepository: UserRepositoryProtocol {
                 let users = try okResponse.body.json
                 return users.map { $0.toDomain() }
             case .forbidden:
-                print("❌ [UserRepository] fetchUsers failed - Forbidden")
+                print("❌ [UserRepository] fetchUsers failed - Forbidden (403)")
                 throw NetworkError.unauthorized
-            case .undocumented(statusCode: let code, _):
+            case .undocumented(statusCode: let code, let body):
                 let error = NetworkError.from(statusCode: code)
-                print("❌ [UserRepository] fetchUsers failed - Status: \(code), Error: \(error)")
+                var bodyString = "N/A"
+                if let httpBody = body.body {
+                    bodyString = (try? await String(collecting: httpBody, upTo: 10000)) ?? "N/A"
+                }
+                print("❌ [UserRepository] fetchUsers failed - Status: \(code), Error: \(error), Body: \(bodyString)")
                 throw error
             }
         } catch let error as NetworkError {
@@ -66,9 +74,14 @@ class UserRepository: UserRepositoryProtocol {
     }
 
     func createUser(name: String, avatarUrl: String?) async throws -> User {
+        // Note: idAlias is required in the latest spec
+        // For now, we generate it from name (lowercase, replace spaces with hyphens)
+        let idAlias = name.lowercased().replacingOccurrences(of: " ", with: "-")
+
         let input = Operations.post_sol_users.Input(
             body: .json(
                 Components.Schemas.CreateUserRequest(
+                    idAlias: idAlias,
                     name: name,
                     avatarUrl: avatarUrl
                 )
@@ -83,11 +96,15 @@ class UserRepository: UserRepositoryProtocol {
                 let userDTO = try createdResponse.body.json
                 return userDTO.toDomain()
             case .forbidden:
-                print("❌ [UserRepository] createUser failed - Forbidden")
+                print("❌ [UserRepository] createUser failed - Forbidden (403)")
                 throw NetworkError.unauthorized
-            case .undocumented(statusCode: let code, _):
+            case .undocumented(statusCode: let code, let body):
                 let error = NetworkError.from(statusCode: code)
-                print("❌ [UserRepository] createUser failed - Status: \(code), Error: \(error)")
+                var bodyString = "N/A"
+                if let httpBody = body.body {
+                    bodyString = (try? await String(collecting: httpBody, upTo: 10000)) ?? "N/A"
+                }
+                print("❌ [UserRepository] createUser failed - Status: \(code), Error: \(error), Body: \(bodyString)")
                 throw error
             }
         } catch let error as NetworkError {
@@ -114,14 +131,18 @@ class UserRepository: UserRepositoryProtocol {
                 let userDTO = try okResponse.body.json
                 return userDTO.toDomain()
             case .badRequest:
-                print("❌ [UserRepository] loginByIdAlias failed - Invalid idAlias format: \(idAlias)")
+                print("❌ [UserRepository] loginByIdAlias failed - Invalid idAlias format: \(idAlias) (400)")
                 throw NetworkError.validationError(message: "Invalid ID Alias format")
             case .notFound:
-                print("❌ [UserRepository] loginByIdAlias failed - User not found: \(idAlias)")
+                print("❌ [UserRepository] loginByIdAlias failed - User not found: \(idAlias) (404)")
                 throw NetworkError.notFound
-            case .undocumented(statusCode: let code, _):
+            case .undocumented(statusCode: let code, let body):
                 let error = NetworkError.from(statusCode: code)
-                print("❌ [UserRepository] loginByIdAlias failed - Status: \(code)")
+                var bodyString = "N/A"
+                if let httpBody = body.body {
+                    bodyString = (try? await String(collecting: httpBody, upTo: 10000)) ?? "N/A"
+                }
+                print("❌ [UserRepository] loginByIdAlias failed - Status: \(code), Body: \(bodyString)")
                 throw error
             }
         } catch let error as NetworkError {

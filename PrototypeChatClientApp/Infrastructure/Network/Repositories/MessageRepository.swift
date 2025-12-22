@@ -10,10 +10,10 @@ class MessageRepository: MessageRepositoryProtocol {
     }
 
     func fetchMessages(conversationId: String, userId: String, limit: Int) async throws -> [Message] {
+        // userId is no longer needed as query parameter - backend uses authenticated user from cookie
         let input = Operations.get_sol_conversations_sol__lcub_id_rcub__sol_messages.Input(
             path: .init(id: conversationId),
             query: .init(
-                userId: userId,
                 limit: limit,
                 before: nil
             )
@@ -26,9 +26,13 @@ class MessageRepository: MessageRepositoryProtocol {
             case .ok(let okResponse):
                 let messageDTOs = try okResponse.body.json
                 return messageDTOs.map { $0.toDomain() }
-            case .undocumented(statusCode: let code, _):
+            case .undocumented(statusCode: let code, let body):
                 let error = NetworkError.from(statusCode: code)
-                print("❌ [MessageRepository] fetchMessages failed - Status: \(code), Error: \(error)")
+                var bodyString = "N/A"
+                if let httpBody = body.body {
+                    bodyString = (try? await String(collecting: httpBody, upTo: 10000)) ?? "N/A"
+                }
+                print("❌ [MessageRepository] fetchMessages failed - Status: \(code), Error: \(error), Body: \(bodyString)")
                 throw error
             }
         } catch let error as NetworkError {
@@ -41,10 +45,8 @@ class MessageRepository: MessageRepositoryProtocol {
     }
 
     func sendMessage(conversationId: String, senderUserId: String, text: String) async throws -> Message {
-        let request = Components.Schemas.SendMessageRequest.from(
-            senderUserId: senderUserId,
-            text: text
-        )
+        // senderUserId is no longer needed - backend uses authenticated user from cookie
+        let request = Components.Schemas.SendMessageRequest.from(text: text)
 
         let input = Operations.post_sol_conversations_sol__lcub_id_rcub__sol_messages.Input(
             path: .init(id: conversationId),
@@ -58,9 +60,13 @@ class MessageRepository: MessageRepositoryProtocol {
             case .created(let createdResponse):
                 let messageDTO = try createdResponse.body.json
                 return messageDTO.toDomain()
-            case .undocumented(statusCode: let code, _):
+            case .undocumented(statusCode: let code, let body):
                 let error = NetworkError.from(statusCode: code)
-                print("❌ [MessageRepository] sendMessage failed - Status: \(code), Error: \(error)")
+                var bodyString = "N/A"
+                if let httpBody = body.body {
+                    bodyString = (try? await String(collecting: httpBody, upTo: 10000)) ?? "N/A"
+                }
+                print("❌ [MessageRepository] sendMessage failed - Status: \(code), Error: \(error), Body: \(bodyString)")
                 throw error
             }
         } catch let error as NetworkError {

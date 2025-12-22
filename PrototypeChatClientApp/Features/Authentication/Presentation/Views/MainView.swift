@@ -23,10 +23,14 @@ struct MainView_Previews: PreviewProvider {
     static var previews: some View {
         let container = DependencyContainer.makePreviewContainer()
         let viewModel = container.authenticationViewModel
+        let aliceUser = User(id: "user-1", idAlias: "alice", name: "Alice", avatarUrl: nil, createdAt: Date())
         viewModel.isAuthenticated = true
         viewModel.currentSession = AuthSession(
-            userId: "user-1",
-            user: User(id: "user-1", idAlias: "alice", name: "Alice", avatarUrl: nil, createdAt: Date()),
+            authUserId: "auth-1",
+            username: "alice",
+            email: "alice@example.com",
+            user: aliceUser,
+            chatUser: aliceUser,
             authenticatedAt: Date()
         )
 

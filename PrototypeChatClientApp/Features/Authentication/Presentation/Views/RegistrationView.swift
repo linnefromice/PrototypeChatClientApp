@@ -1,63 +1,29 @@
 import SwiftUI
 
-// MARK: - Container (Dependency Injection)
-
-/// AuthenticationView Container
-/// Responsible for dependency injection and ViewModel creation
-/// Switches between login and registration views
-struct AuthenticationView: View {
-    @StateObject private var viewModel: AuthenticationViewModel
-
-    init(viewModel: AuthenticationViewModel) {
-        _viewModel = StateObject(wrappedValue: viewModel)
-    }
-
-    var body: some View {
-        Group {
-            if viewModel.isRegistering {
-                RegistrationView(viewModel: viewModel)
-            } else {
-                AuthenticationPresenter(viewModel: viewModel)
-            }
-        }
-        .animation(.easeInOut, value: viewModel.isRegistering)
-    }
-}
-
-// MARK: - Presenter (UI Logic)
-
-/// AuthenticationPresenter
-/// Responsible for UI presentation only (no dependency management)
-/// This separation enables easy SwiftUI Previews without complex DI setup
-struct AuthenticationPresenter: View {
+/// ユーザー登録画面
+struct RegistrationView: View {
     @ObservedObject var viewModel: AuthenticationViewModel
 
     var body: some View {
-        NavigationStack {
+        ScrollView {
             VStack(spacing: 24) {
                 // ロゴ・タイトル
                 VStack(spacing: 8) {
-                    Image(systemName: "message.fill")
+                    Image(systemName: "person.badge.plus")
                         .font(.system(size: 60))
                         .foregroundColor(.blue)
 
-                    Text("チャットアプリ")
-                        .font(.title)
+                    Text("新規アカウント登録")
+                        .font(.title2)
                         .fontWeight(.bold)
-
-                    Text("開発用認証")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
                 }
-                .padding(.top, 60)
+                .padding(.top, 40)
 
-                Spacer()
-
-                // 入力フォーム
+                // 登録フォーム
                 VStack(spacing: 16) {
                     // Username field
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("ユーザー名")
+                        Text("ユーザー名 *")
                             .font(.subheadline)
                             .fontWeight(.medium)
 
@@ -66,11 +32,29 @@ struct AuthenticationPresenter: View {
                             .textInputAutocapitalization(.never)
                             .autocorrectionDisabled()
                             .disabled(viewModel.isAuthenticating)
+
+                        Text("3-20文字の英数字、アンダースコア、ハイフン")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+
+                    // Email field
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("メールアドレス *")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+
+                        TextField("メールアドレスを入力", text: $viewModel.email)
+                            .textFieldStyle(.roundedBorder)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
+                            .keyboardType(.emailAddress)
+                            .disabled(viewModel.isAuthenticating)
                     }
 
                     // Password field
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("パスワード")
+                        Text("パスワード *")
                             .font(.subheadline)
                             .fontWeight(.medium)
 
@@ -81,22 +65,12 @@ struct AuthenticationPresenter: View {
                                     .textInputAutocapitalization(.never)
                                     .autocorrectionDisabled()
                                     .disabled(viewModel.isAuthenticating)
-                                    .onSubmit {
-                                        Task {
-                                            await viewModel.login()
-                                        }
-                                    }
                             } else {
                                 SecureField("パスワードを入力", text: $viewModel.password)
                                     .textFieldStyle(.roundedBorder)
                                     .textInputAutocapitalization(.never)
                                     .autocorrectionDisabled()
                                     .disabled(viewModel.isAuthenticating)
-                                    .onSubmit {
-                                        Task {
-                                            await viewModel.login()
-                                        }
-                                    }
                             }
 
                             Button {
@@ -108,6 +82,25 @@ struct AuthenticationPresenter: View {
                             }
                             .disabled(viewModel.isAuthenticating)
                         }
+
+                        Text("8文字以上")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+
+                    // Name field
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("表示名 *")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+
+                        TextField("表示名を入力", text: $viewModel.name)
+                            .textFieldStyle(.roundedBorder)
+                            .disabled(viewModel.isAuthenticating)
+
+                        Text("チャットで表示される名前（1-50文字）")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
                     }
 
                     // エラーメッセージ
@@ -126,10 +119,10 @@ struct AuthenticationPresenter: View {
                         )
                     }
 
-                    // ログインボタン
+                    // 登録ボタン
                     Button {
                         Task {
-                            await viewModel.login()
+                            await viewModel.register()
                         }
                     } label: {
                         HStack {
@@ -137,21 +130,21 @@ struct AuthenticationPresenter: View {
                                 ProgressView()
                                     .progressViewStyle(CircularProgressViewStyle(tint: .white))
                             }
-                            Text(viewModel.isAuthenticating ? "ログイン中..." : "ログイン")
+                            Text(viewModel.isAuthenticating ? "登録中..." : "登録")
                         }
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(Color.blue)
+                        .background(isFormValid ? Color.blue : Color.gray)
                         .foregroundColor(.white)
                         .cornerRadius(10)
                     }
-                    .disabled(viewModel.username.isEmpty || viewModel.password.isEmpty || viewModel.isAuthenticating)
+                    .disabled(!isFormValid || viewModel.isAuthenticating)
 
-                    // 登録画面へのリンク
+                    // ログイン画面へのリンク
                     Button {
                         viewModel.toggleRegistrationMode()
                     } label: {
-                        Text("アカウントをお持ちでない方はこちら")
+                        Text("既にアカウントをお持ちの方はこちら")
                             .font(.subheadline)
                             .foregroundColor(.blue)
                     }
@@ -160,24 +153,18 @@ struct AuthenticationPresenter: View {
                 .padding(.horizontal, 32)
 
                 Spacer()
-
-                // デバッグ情報（開発環境のみ）
-                #if DEBUG
-                VStack(spacing: 4) {
-                    Text("開発環境")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-
-                    Text("テストユーザー: alice, bob, charlie")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                }
-                .padding(.bottom, 16)
-                #endif
             }
-            .navigationTitle("")
-            .navigationBarHidden(true)
         }
+        .navigationTitle("")
+        .navigationBarHidden(true)
+    }
+
+    /// フォームの入力チェック
+    private var isFormValid: Bool {
+        !viewModel.username.isEmpty &&
+        !viewModel.email.isEmpty &&
+        !viewModel.password.isEmpty &&
+        !viewModel.name.isEmpty
     }
 }
 
@@ -185,28 +172,28 @@ struct AuthenticationPresenter: View {
 
 #Preview("初期状態") {
     let container = DependencyContainer.makePreviewContainer()
-    return AuthenticationPresenter(viewModel: container.authenticationViewModel)
+    let viewModel = container.authenticationViewModel
+    viewModel.isRegistering = true
+    return RegistrationView(viewModel: viewModel)
 }
 
-#Preview("ID Alias入力済み") {
+#Preview("入力済み") {
     let container = DependencyContainer.makePreviewContainer()
     let viewModel = container.authenticationViewModel
-    viewModel.idAlias = "alice"
-    return AuthenticationPresenter(viewModel: viewModel)
+    viewModel.isRegistering = true
+    viewModel.username = "newuser"
+    viewModel.email = "newuser@example.com"
+    viewModel.password = "password123"
+    viewModel.name = "New User"
+    return RegistrationView(viewModel: viewModel)
 }
 
 #Preview("エラー表示") {
     let container = DependencyContainer.makePreviewContainer()
     let viewModel = container.authenticationViewModel
-    viewModel.idAlias = "invalid-user"
-    viewModel.errorMessage = "指定されたユーザーが見つかりません"
-    return AuthenticationPresenter(viewModel: viewModel)
-}
-
-#Preview("認証中") {
-    let container = DependencyContainer.makePreviewContainer()
-    let viewModel = container.authenticationViewModel
-    viewModel.idAlias = "alice"
-    viewModel.isAuthenticating = true
-    return AuthenticationPresenter(viewModel: viewModel)
+    viewModel.isRegistering = true
+    viewModel.username = "alice"
+    viewModel.email = "alice@example.com"
+    viewModel.errorMessage = "このユーザー名は既に使用されています"
+    return RegistrationView(viewModel: viewModel)
 }

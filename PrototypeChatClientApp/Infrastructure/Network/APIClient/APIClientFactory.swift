@@ -72,7 +72,8 @@ class APIClientFactory {
             dateTranscoder: CustomDateTranscoder()
         )
 
-        let transport = URLSessionTransport()
+        // Use NetworkConfiguration.session for cookie-based authentication
+        let transport = URLSessionTransport(configuration: .init(session: NetworkConfiguration.session))
 
         #if DEBUG
         // DEBUGビルドではログ出力を有効化

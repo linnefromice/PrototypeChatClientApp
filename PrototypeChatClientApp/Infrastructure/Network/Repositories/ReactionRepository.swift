@@ -21,9 +21,16 @@ class ReactionRepository: ReactionRepositoryProtocol {
             case .ok(let okResponse):
                 let reactionDTOs = try okResponse.body.json
                 return reactionDTOs.map { $0.toDomain() }
-            case .undocumented(statusCode: let code, _):
+            case .notFound:
+                print("❌ [ReactionRepository] fetchReactions - Message not found")
+                throw NetworkError.notFound
+            case .undocumented(statusCode: let code, let body):
                 let error = NetworkError.from(statusCode: code)
-                print("❌ [ReactionRepository] fetchReactions failed - Status: \(code), Error: \(error)")
+                var bodyString = "N/A"
+                if let httpBody = body.body {
+                    bodyString = (try? await String(collecting: httpBody, upTo: 10000)) ?? "N/A"
+                }
+                print("❌ [ReactionRepository] fetchReactions failed - Status: \(code), Error: \(error), Body: \(bodyString)")
                 throw error
             }
         } catch let error as NetworkError {
@@ -36,10 +43,8 @@ class ReactionRepository: ReactionRepositoryProtocol {
     }
 
     func addReaction(messageId: String, userId: String, emoji: String) async throws -> Reaction {
-        let request = Components.Schemas.ReactionRequest.from(
-            userId: userId,
-            emoji: emoji
-        )
+        // userId is no longer needed - backend uses authenticated user from cookie
+        let request = Components.Schemas.ReactionRequest.from(emoji: emoji)
 
         let input = Operations.post_sol_messages_sol__lcub_id_rcub__sol_reactions.Input(
             path: .init(id: messageId),
@@ -53,9 +58,13 @@ class ReactionRepository: ReactionRepositoryProtocol {
             case .created(let createdResponse):
                 let reactionDTO = try createdResponse.body.json
                 return reactionDTO.toDomain()
-            case .undocumented(statusCode: let code, _):
+            case .undocumented(statusCode: let code, let body):
                 let error = NetworkError.from(statusCode: code)
-                print("❌ [ReactionRepository] addReaction failed - Status: \(code), Error: \(error)")
+                var bodyString = "N/A"
+                if let httpBody = body.body {
+                    bodyString = (try? await String(collecting: httpBody, upTo: 10000)) ?? "N/A"
+                }
+                print("❌ [ReactionRepository] addReaction failed - Status: \(code), Error: \(error), Body: \(bodyString)")
                 throw error
             }
         } catch let error as NetworkError {
@@ -68,9 +77,9 @@ class ReactionRepository: ReactionRepositoryProtocol {
     }
 
     func removeReaction(messageId: String, userId: String, emoji: String) async throws {
+        // userId is no longer needed as query parameter - backend uses authenticated user from cookie
         let input = Operations.delete_sol_messages_sol__lcub_id_rcub__sol_reactions_sol__lcub_emoji_rcub_.Input(
-            path: .init(id: messageId, emoji: emoji),
-            query: .init(userId: userId)
+            path: .init(id: messageId, emoji: emoji)
         )
 
         do {
@@ -81,9 +90,13 @@ class ReactionRepository: ReactionRepositoryProtocol {
                 // Successfully removed
                 print("✅ [ReactionRepository] removeReaction succeeded")
                 return
-            case .undocumented(statusCode: let code, _):
+            case .undocumented(statusCode: let code, let body):
                 let error = NetworkError.from(statusCode: code)
-                print("❌ [ReactionRepository] removeReaction failed - Status: \(code), Error: \(error)")
+                var bodyString = "N/A"
+                if let httpBody = body.body {
+                    bodyString = (try? await String(collecting: httpBody, upTo: 10000)) ?? "N/A"
+                }
+                print("❌ [ReactionRepository] removeReaction failed - Status: \(code), Error: \(error), Body: \(bodyString)")
                 throw error
             }
         } catch let error as NetworkError {

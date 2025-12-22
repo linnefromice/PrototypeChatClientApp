@@ -4,26 +4,40 @@ import Foundation
 ///
 /// スコープ: Features/Authentication内でのみ使用
 protocol AuthenticationUseCaseProtocol {
+    // Legacy idAlias authentication (deprecated)
     func authenticate(idAlias: String) async throws -> AuthSession
+
+    // BetterAuth methods
+    func register(username: String, email: String, password: String, name: String) async throws -> AuthSession
+    func login(username: String, password: String) async throws -> AuthSession
+    func validateSession() async throws -> AuthSession?
+
+    // Session management
     func loadSavedSession() -> AuthSession?
-    func logout()
+    func logout() async throws
 }
 
 /// 認証UseCase実装
 ///
 /// 責務:
-/// - ID Aliasのバリデーション
-/// - UserRepositoryを使用してユーザーログイン
-/// - AuthSessionの作成と永続化
-/// - セッションの有効性チェック
+/// - BetterAuth認証（username/password）
+/// - ユーザー登録
+/// - セッション検証とCookie管理
+/// - 入力バリデーション
 class AuthenticationUseCase: AuthenticationUseCaseProtocol {
-    private let userRepository: UserRepositoryProtocol  // Core層のProtocolに依存
+    private let authRepository: AuthenticationRepositoryProtocol
+    private let profileRepository: ProfileRepositoryProtocol
+    private let userRepository: UserRepositoryProtocol  // Legacy support
     private let sessionManager: AuthSessionManagerProtocol
 
     init(
+        authRepository: AuthenticationRepositoryProtocol,
+        profileRepository: ProfileRepositoryProtocol,
         userRepository: UserRepositoryProtocol,
         sessionManager: AuthSessionManagerProtocol
     ) {
+        self.authRepository = authRepository
+        self.profileRepository = profileRepository
         self.userRepository = userRepository
         self.sessionManager = sessionManager
     }
@@ -47,9 +61,13 @@ class AuthenticationUseCase: AuthenticationUseCaseProtocol {
         }
 
         // 4. セッション作成（user.idを使用）
+        // Legacy endpoint doesn't provide auth_user fields, so use placeholders
         let session = AuthSession(
-            userId: user.id,
+            authUserId: user.id,  // Use chat user id as placeholder
+            username: user.idAlias,  // Use idAlias as username
+            email: "\(user.idAlias)@legacy.local",  // Placeholder email
             user: user,
+            chatUser: user,  // Legacy login has chat user
             authenticatedAt: Date()
         )
 
@@ -87,7 +105,149 @@ class AuthenticationUseCase: AuthenticationUseCaseProtocol {
         return session
     }
 
-    func logout() {
+    func logout() async throws {
+        // Call backend logout endpoint to invalidate session
+        try await authRepository.signOut()
+
+        // Clear local session
         sessionManager.clearSession()
+    }
+
+    // MARK: - BetterAuth Methods
+
+    func register(username: String, email: String, password: String, name: String) async throws -> AuthSession {
+        // 1. Validate inputs
+        try validateUsername(username)
+        try validateEmail(email)
+        try validatePassword(password)
+        try validateName(name)
+
+        // 2. Call repository to register
+        var session = try await authRepository.signUp(
+            username: username,
+            email: email,
+            password: password,
+            name: name
+        )
+
+        // 3. Fetch complete profile to get chat user ID
+        session = try await fetchCompleteProfile(baseSession: session)
+
+        return session
+    }
+
+    func login(username: String, password: String) async throws -> AuthSession {
+        // 1. Validate inputs
+        guard !username.trimmingCharacters(in: .whitespaces).isEmpty else {
+            throw AuthenticationError.emptyUserId
+        }
+        guard !password.isEmpty else {
+            throw AuthenticationError.invalidCredentials
+        }
+
+        // 2. Call repository to sign in
+        var session = try await authRepository.signIn(
+            username: username,
+            password: password
+        )
+
+        // 3. Fetch complete profile to get chat user ID
+        session = try await fetchCompleteProfile(baseSession: session)
+
+        return session
+    }
+
+    func validateSession() async throws -> AuthSession? {
+        // Call backend to validate session via cookie
+        return try await authRepository.getSession()
+    }
+
+    // MARK: - Validation Helpers
+
+    private func validateUsername(_ username: String) throws {
+        let trimmed = username.trimmingCharacters(in: .whitespaces)
+
+        guard !trimmed.isEmpty else {
+            throw AuthenticationError.emptyUserId
+        }
+
+        guard trimmed.count >= 3, trimmed.count <= 20 else {
+            throw AuthenticationError.invalidUsernameFormat
+        }
+
+        // Username: alphanumeric, underscore, hyphen
+        let pattern = "^[a-zA-Z0-9_-]+$"
+        guard let regex = try? NSRegularExpression(pattern: pattern),
+              regex.firstMatch(in: trimmed, range: NSRange(location: 0, length: trimmed.utf16.count)) != nil else {
+            throw AuthenticationError.invalidUsernameFormat
+        }
+    }
+
+    private func validateEmail(_ email: String) throws {
+        let trimmed = email.trimmingCharacters(in: .whitespaces)
+
+        guard !trimmed.isEmpty else {
+            throw AuthenticationError.invalidEmail
+        }
+
+        // Basic email validation
+        guard trimmed.contains("@"), trimmed.contains(".") else {
+            throw AuthenticationError.invalidEmail
+        }
+    }
+
+    private func validatePassword(_ password: String) throws {
+        guard password.count >= 8 else {
+            throw AuthenticationError.passwordTooShort
+        }
+    }
+
+    private func validateName(_ name: String) throws {
+        let trimmed = name.trimmingCharacters(in: .whitespaces)
+
+        guard !trimmed.isEmpty else {
+            throw AuthenticationError.invalidName
+        }
+
+        guard trimmed.count <= 50 else {
+            throw AuthenticationError.invalidName
+        }
+    }
+
+    // MARK: - Profile Helpers
+
+    /// Fetch complete profile after authentication to get proper chat user ID
+    private func fetchCompleteProfile(baseSession: AuthSession) async throws -> AuthSession {
+        print("ℹ️ [AuthenticationUseCase] Fetching complete profile for user: \(baseSession.username)")
+        print("ℹ️ [AuthenticationUseCase] Base session - authUserId: \(baseSession.authUserId), user.id: \(baseSession.user.id), chatUser: \(baseSession.chatUser?.id ?? "nil")")
+
+        do {
+            let profile = try await profileRepository.fetchProfile()
+            print("ℹ️ [AuthenticationUseCase] Profile fetched - authUserId: \(profile.authUserId), chatUser: \(profile.chatUser?.id ?? "nil")")
+
+            // If chat user is available, update the session
+            if let chatUser = profile.chatUser {
+                print("✅ [AuthenticationUseCase] Chat user found - ID: \(chatUser.id), idAlias: \(chatUser.idAlias)")
+                let updatedSession = AuthSession(
+                    authUserId: profile.authUserId,
+                    username: profile.username,
+                    email: profile.email,
+                    user: chatUser,
+                    chatUser: chatUser,
+                    authenticatedAt: baseSession.authenticatedAt
+                )
+                print("✅ [AuthenticationUseCase] Updated session - userId (computed): \(updatedSession.userId)")
+                return updatedSession
+            } else {
+                print("⚠️ [AuthenticationUseCase] No chat user found in profile response")
+                print("⚠️ [AuthenticationUseCase] User needs to create a chat profile first")
+                // No chat user available, return base session
+                return baseSession
+            }
+        } catch {
+            print("⚠️ [AuthenticationUseCase] Failed to fetch profile, using base session: \(error)")
+            // Fallback to base session if profile fetch fails
+            return baseSession
+        }
     }
 }

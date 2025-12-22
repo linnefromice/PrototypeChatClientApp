@@ -176,9 +176,13 @@ struct ConversationListView_Previews: PreviewProvider {
         let container = DependencyContainer.makePreviewContainer()
         let authViewModel = container.authenticationViewModel
         authViewModel.isAuthenticated = true
+        let aliceUser = User(id: "user1", idAlias: "alice", name: "Alice", avatarUrl: nil, createdAt: Date())
         authViewModel.currentSession = AuthSession(
-            userId: "user1",
-            user: User(id: "user1", idAlias: "alice", name: "Alice", avatarUrl: nil, createdAt: Date()),
+            authUserId: "auth-1",
+            username: "alice",
+            email: "alice@example.com",
+            user: aliceUser,
+            chatUser: aliceUser,
             authenticatedAt: Date()
         )
 

@@ -23,6 +23,7 @@ extension User {
     /// - Returns: OpenAPI CreateUserRequest schema
     func toCreateRequest() -> Components.Schemas.CreateUserRequest {
         Components.Schemas.CreateUserRequest(
+            idAlias: idAlias,
             name: name,
             avatarUrl: avatarUrl
         )

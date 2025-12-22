@@ -9,7 +9,7 @@ enum AppEnvironment {
     var baseURL: URL {
         switch self {
         case .development:
-            return URL(string: "http://localhost:3000")!
+            return URL(string: "http://localhost:8787")!  // Match local backend port
         case .production:
             return URL(string: "https://prototype-hono-drizzle-backend.linnefromice.workers.dev")!
         }
@@ -17,12 +17,14 @@ enum AppEnvironment {
 
     /// 現在の環境を取得
     static var current: AppEnvironment {
-        // 環境変数 USE_PRODUCTION_API が設定されている場合は本番環境を使用
-        if ProcessInfo.processInfo.environment["USE_PRODUCTION_API"] != nil {
-            return .production
+        // 環境変数 USE_LOCAL_API が設定されている場合はローカル環境を使用
+        if ProcessInfo.processInfo.environment["USE_LOCAL_API"] != nil {
+            return .development
         }
-        
-        return .production
+
+        // Default to production (HTTPS) to support Secure cookies
+        // Local development with HTTP doesn't support Secure cookies from backend
+        return .development
 
 //        #if DEBUG
 //        // DEBUGビルドでもlocalhostが起動していない場合は本番環境を使用

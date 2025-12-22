@@ -14,10 +14,10 @@ extension Components.Schemas.Reaction {
 }
 
 extension Components.Schemas.ReactionRequest {
-    static func from(userId: String, emoji: String) -> Self {
+    static func from(emoji: String) -> Self {
         Self(
-            userId: userId,
             emoji: emoji
+            // userId is no longer in the spec - backend uses authenticated user from cookie
         )
     }
 }
