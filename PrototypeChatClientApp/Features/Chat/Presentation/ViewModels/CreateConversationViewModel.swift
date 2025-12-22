@@ -2,10 +2,11 @@ import Foundation
 import Combine
 
 /// チャット作成画面のViewModel
+@MainActor
 class CreateConversationViewModel: ObservableObject {
     // MARK: - Properties
-    private let conversationUseCase: ConversationUseCase
-    private let userListUseCase: UserListUseCase
+    private let conversationUseCase: ConversationUseCaseProtocol
+    private let userListUseCase: UserListUseCaseProtocol
     private let currentUserId: String
 
     @Published var availableUsers: [User] = []
@@ -20,8 +21,8 @@ class CreateConversationViewModel: ObservableObject {
 
     // MARK: - Initialization
     init(
-        conversationUseCase: ConversationUseCase,
-        userListUseCase: UserListUseCase,
+        conversationUseCase: ConversationUseCaseProtocol,
+        userListUseCase: UserListUseCaseProtocol,
         currentUserId: String
     ) {
         self.conversationUseCase = conversationUseCase
@@ -31,7 +32,6 @@ class CreateConversationViewModel: ObservableObject {
 
     // MARK: - Methods
     /// 選択可能なユーザー一覧を読み込む
-    @MainActor
     func loadAvailableUsers() async {
         isLoading = true
         errorMessage = nil
@@ -59,7 +59,6 @@ class CreateConversationViewModel: ObservableObject {
     }
 
     /// 1:1チャットを作成
-    @MainActor
     func createDirectConversation() async {
         guard let targetUserId = selectedUserId else {
             errorMessage = "ユーザーを選択してください"
@@ -96,7 +95,6 @@ class CreateConversationViewModel: ObservableObject {
     }
 
     /// グループチャットを作成
-    @MainActor
     func createGroupConversation() async {
         guard !groupName.trimmingCharacters(in: .whitespaces).isEmpty else {
             errorMessage = "グループ名を入力してください"

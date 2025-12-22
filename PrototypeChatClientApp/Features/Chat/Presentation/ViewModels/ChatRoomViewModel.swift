@@ -4,8 +4,8 @@ import Combine
 @MainActor
 class ChatRoomViewModel: ObservableObject {
     // MARK: - Properties
-    private let messageUseCase: MessageUseCase
-    private let reactionUseCase: ReactionUseCase
+    private let messageUseCase: MessageUseCaseProtocol
+    private let reactionUseCase: ReactionUseCaseProtocol
     private let conversationId: String
     let currentUserId: String
 
@@ -19,8 +19,8 @@ class ChatRoomViewModel: ObservableObject {
 
     // MARK: - Initialization
     init(
-        messageUseCase: MessageUseCase,
-        reactionUseCase: ReactionUseCase,
+        messageUseCase: MessageUseCaseProtocol,
+        reactionUseCase: ReactionUseCaseProtocol,
         conversationId: String,
         currentUserId: String
     ) {

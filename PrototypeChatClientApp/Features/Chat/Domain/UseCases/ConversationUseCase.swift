@@ -1,7 +1,14 @@
 import Foundation
 
+/// 会話に関するユースケースのプロトコル
+protocol ConversationUseCaseProtocol {
+    func fetchConversations(userId: String) async throws -> [ConversationDetail]
+    func createDirectConversation(currentUserId: String, targetUserId: String) async throws -> ConversationDetail
+    func createGroupConversation(currentUserId: String, participantUserIds: [String], groupName: String) async throws -> ConversationDetail
+}
+
 /// 会話に関するユースケース
-class ConversationUseCase {
+class ConversationUseCase: ConversationUseCaseProtocol {
     private let conversationRepository: ConversationRepositoryProtocol
 
     init(conversationRepository: ConversationRepositoryProtocol) {
