@@ -16,20 +16,13 @@ struct ConversationListView: View {
         NavigationView {
             Group {
                 if viewModel.isLoading {
-                    ProgressView("読み込み中...")
+                    LoadingView(message: "会話を読み込み中...")
                 } else if viewModel.conversations.isEmpty {
-                    VStack(spacing: 16) {
-                        Image(systemName: "bubble.left.and.bubble.right")
-                            .font(.system(size: 48))
-                            .foregroundColor(.gray)
-                        Text("チャットがありません")
-                            .font(.headline)
-                        Text("右上の + ボタンから新しいチャットを作成できます")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal)
-                    }
+                    EmptyStateView(
+                        icon: "bubble.left.and.bubble.right",
+                        title: "チャットがありません",
+                        message: "右上の + ボタンから新しいチャットを作成できます"
+                    )
                 } else {
                     conversationList
                 }
