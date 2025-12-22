@@ -204,6 +204,61 @@ Infrastructure/
 
 See `Specs/Plans/API_LAYER_DESIGN_20251211_JA.md` for detailed design.
 
+## Environment Configuration
+
+### Backend URL Management
+
+The app uses **Info.plist + Build Settings** to manage environment-specific backend URLs.
+
+**Configuration Flow:**
+```
+Build Settings (BACKEND_URL) → Info.plist (BackendUrl) → Environment.backendUrl
+```
+
+**Current Setup:**
+- **Development**: `http://localhost:8787` (requires local backend running)
+- **Production**: `https://prototype-hono-drizzle-backend.linnefromice.workers.dev`
+
+**Setup Instructions:**
+
+1. **Add User-Defined Setting in Xcode:**
+   - Project → Build Settings → `+` → Add User-Defined Setting
+   - Name: `BACKEND_URL`
+   - Debug: `http://localhost:8787`
+   - Release: `https://prototype-hono-drizzle-backend.linnefromice.workers.dev`
+
+2. **Verify Info.plist:**
+   ```xml
+   <key>BackendUrl</key>
+   <string>$(BACKEND_URL)</string>
+   ```
+
+3. **Use in Code:**
+   ```swift
+   // Recommended
+   let url = AppConfig.backendUrl
+
+   // Legacy (still supported)
+   let env = AppEnvironment.current
+   let url = env.baseURL
+   ```
+
+**Debugging:**
+```swift
+#if DEBUG
+AppConfig.printConfiguration()
+// Output:
+// 🔧 [Environment] Configuration:
+//    Backend URL: http://localhost:8787
+//    Environment: Development
+//    Secure Context: false
+#endif
+```
+
+**See Also:**
+- Detailed guide: `Docs/ENVIRONMENT_SETUP.md`
+- AppConfig struct: `Infrastructure/Environment/AppConfig.swift`
+
 ## Implementation Rules
 
 ### Critical: Always Build After Code Changes

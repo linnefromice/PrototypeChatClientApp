@@ -1,37 +1,43 @@
 import Foundation
 
 /// アプリケーション実行環境
+///
+/// Info.plistの`BackendUrl`設定から環境を判定します。
+/// Build Settingsの`BACKEND_URL`で環境ごとのURLを設定してください。
 enum AppEnvironment {
     case development
     case production
 
     /// 環境に応じたベースURL
     var baseURL: URL {
-        switch self {
-        case .development:
-            return URL(string: "http://localhost:8787")!  // Match local backend port
-        case .production:
-            return URL(string: "https://prototype-hono-drizzle-backend.linnefromice.workers.dev")!
-        }
+        // Info.plistから設定されたURLを使用
+        return AppConfig.backendUrl
     }
 
     /// 現在の環境を取得
+    ///
+    /// Info.plistの`BackendUrl`設定から自動判定します。
+    /// - localhost → development
+    /// - その他 → production
     static var current: AppEnvironment {
-        // 環境変数 USE_LOCAL_API が設定されている場合はローカル環境を使用
-        if ProcessInfo.processInfo.environment["USE_LOCAL_API"] != nil {
-            return .development
+        // 環境変数による強制切り替え（デバッグ用）
+        #if DEBUG
+        if let envOverride = ProcessInfo.processInfo.environment["USE_ENVIRONMENT"] {
+            switch envOverride.lowercased() {
+            case "production":
+                return .production
+            default:
+                return .development
+            }
         }
+        #endif
 
-        // Default to production (HTTPS) to support Secure cookies
-        // Local development with HTTP doesn't support Secure cookies from backend
-        return .development
-
-//        #if DEBUG
-//        // DEBUGビルドでもlocalhostが起動していない場合は本番環境を使用
-//        // TODO: より良い方法として、Settings.bundleでユーザーが切り替えられるようにする
-//        return .development
-//        #else
-//        return .production
-//        #endif
+        // Info.plistの設定から自動判定
+        switch AppConfig.currentEnvironmentType {
+        case .development:
+            return .development
+        case .production:
+            return .production
+        }
     }
 }
