@@ -2,7 +2,7 @@ import Foundation
 
 /// 会話リポジトリプロトコル
 ///
-/// スコープ: Core層で定義、Features/Chat内で使用
+/// スコープ: Features/Chat内で使用
 protocol ConversationRepositoryProtocol {
     /// ユーザーの会話一覧を取得
     /// - Parameter userId: ユーザーID
