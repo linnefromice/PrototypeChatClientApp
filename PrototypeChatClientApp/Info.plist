@@ -4,6 +4,8 @@
 <dict>
 	<key>BackendUrl</key>
 	<string>$(BACKEND_URL)</string>
+	<key>Configuration</key>
+	<string>$(CONFIGURATION)</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsLocalNetworking</key>

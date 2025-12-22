@@ -21,21 +21,42 @@ struct AppConfig {
     ///
     /// Build Settingsの`BACKEND_URL`から設定されます:
     /// - Debug: `http://localhost:8787`
+    /// - Development: `https://prototype-hono-drizzle-backend.linnefromice.workers.dev`
     /// - Release: `https://prototype-hono-drizzle-backend.linnefromice.workers.dev`
     static var backendUrl: URL {
-        guard let urlString = infoDict["BackendUrl"] as? String,
-              !urlString.isEmpty,
-              !urlString.contains("$("),  // 未設定の場合は$(BACKEND_URL)のまま
-              let url = URL(string: urlString) else {
+        // 1. Info.plistから読み取り（ビルド時に変数置換されている場合）
+        if let urlString = infoDict["BackendUrl"] as? String,
+           !urlString.isEmpty,
+           !urlString.contains("$("),  // 未設定の場合は$(BACKEND_URL)のまま
+           let url = URL(string: urlString) {
+            return url
+        }
+
+        // 2. Configurationに基づいてハードコードされた値を返す
+        // Info.plistの変数置換が機能しない場合のフォールバック
+        let configurationName = infoDict["Configuration"] as? String ?? ""
+
+        let defaultUrl: String
+        switch configurationName {
+        case "Debug":
+            defaultUrl = "http://localhost:8787"
+        case "Development":
+            defaultUrl = "https://prototype-hono-drizzle-backend.linnefromice.workers.dev"
+        case "Release":
+            defaultUrl = "https://prototype-hono-drizzle-backend.linnefromice.workers.dev"
+        default:
+            // Configuration名が取得できない場合は #if DEBUG で判定
             #if DEBUG
-            // DEBUGビルドではデフォルトでlocalhostを使用
-            print("⚠️ [Environment] BackendUrl not configured, using default localhost:8787")
-            return URL(string: "http://localhost:8787")!
+            defaultUrl = "http://localhost:8787"
             #else
-            fatalError("BackendUrlが設定されていません。Build SettingsでBACKEND_URLを設定してください。")
+            defaultUrl = "https://prototype-hono-drizzle-backend.linnefromice.workers.dev"
             #endif
         }
-        return url
+
+        print("⚠️ [Environment] BackendUrl not properly configured in Info.plist")
+        print("   Configuration: \(configurationName.isEmpty ? "(unknown)" : configurationName)")
+        print("   Using fallback URL: \(defaultUrl)")
+        return URL(string: defaultUrl)!
     }
 
     /// バックエンドURLが安全なコンテキスト（HTTPS）かどうか
@@ -68,7 +89,9 @@ struct AppConfig {
     #if DEBUG
     /// デバッグ情報を出力
     static func printConfiguration() {
+        let configurationName = infoDict["Configuration"] as? String ?? "(unknown)"
         print("🔧 [Environment] Configuration:")
+        print("   Build Configuration: \(configurationName)")
         print("   Backend URL: \(backendUrl)")
         print("   Environment: \(currentEnvironmentType.displayName)")
         print("   Secure Context: \(isSecureContext)")
