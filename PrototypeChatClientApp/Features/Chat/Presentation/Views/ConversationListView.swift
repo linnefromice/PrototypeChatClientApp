@@ -17,6 +17,12 @@ struct ConversationListView: View {
             Group {
                 if viewModel.isLoading {
                     LoadingView(message: "会話を読み込み中...")
+                } else if viewModel.showError, let errorMessage = viewModel.errorMessage {
+                    ErrorView(message: errorMessage) {
+                        Task {
+                            await viewModel.loadConversations()
+                        }
+                    }
                 } else if viewModel.conversations.isEmpty {
                     EmptyStateView(
                         icon: "bubble.left.and.bubble.right",
@@ -57,13 +63,6 @@ struct ConversationListView: View {
                 NavigationMenuView(onLogout: {
                     showLogoutConfirmation = true
                 })
-            }
-            .alert(isPresented: $viewModel.showError) {
-                Alert(
-                    title: Text("エラー"),
-                    message: Text(viewModel.errorMessage ?? "不明なエラー"),
-                    dismissButton: .default(Text("OK"))
-                )
             }
             .alert("ログアウト", isPresented: $showLogoutConfirmation) {
                 Button("キャンセル", role: .cancel) { }

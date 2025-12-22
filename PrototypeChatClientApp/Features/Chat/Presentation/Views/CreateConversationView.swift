@@ -49,6 +49,12 @@ struct CreateConversationView: View {
                 Group {
                     if viewModel.isLoading {
                         LoadingView(message: "ユーザーを読み込み中...")
+                    } else if viewModel.showError, let errorMessage = viewModel.errorMessage {
+                        ErrorView(message: errorMessage) {
+                            Task {
+                                await viewModel.loadAvailableUsers()
+                            }
+                        }
                     } else if viewModel.availableUsers.isEmpty {
                         EmptyStateView(
                             icon: "person.3",
@@ -73,13 +79,6 @@ struct CreateConversationView: View {
                 }
                 .disabled(!viewModel.canCreate)
             )
-            .alert(isPresented: $viewModel.showError) {
-                Alert(
-                    title: Text("エラー"),
-                    message: Text(viewModel.errorMessage ?? "不明なエラー"),
-                    dismissButton: .default(Text("OK"))
-                )
-            }
             .task {
                 await viewModel.loadAvailableUsers()
             }

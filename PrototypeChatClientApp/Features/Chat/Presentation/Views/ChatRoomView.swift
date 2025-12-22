@@ -16,6 +16,12 @@ struct ChatRoomView: View {
         VStack(spacing: 0) {
             if viewModel.isLoading && viewModel.messages.isEmpty {
                 LoadingView(message: "メッセージを読み込み中...")
+            } else if viewModel.showError, let errorMessage = viewModel.errorMessage {
+                ErrorView(message: errorMessage) {
+                    Task {
+                        await viewModel.loadMessages()
+                    }
+                }
             } else if viewModel.messages.isEmpty {
                 EmptyStateView(
                     icon: "bubble.left.and.bubble.right",
@@ -41,13 +47,6 @@ struct ChatRoomView: View {
         }
         .navigationTitle(conversationTitle)
         .navigationBarTitleDisplayMode(.inline)
-        .alert(isPresented: $viewModel.showError) {
-            Alert(
-                title: Text("エラー"),
-                message: Text(viewModel.errorMessage ?? "不明なエラー"),
-                dismissButton: .default(Text("OK"))
-            )
-        }
         .task {
             await viewModel.loadMessages()
         }
