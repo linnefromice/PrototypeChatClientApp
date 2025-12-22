@@ -8,6 +8,7 @@ class CreateConversationViewModel: ObservableObject {
     private let conversationUseCase: ConversationUseCaseProtocol
     private let userListUseCase: UserListUseCaseProtocol
     private let currentUserId: String
+    let toastManager = ToastManager()
 
     @Published var availableUsers: [User] = []
     @Published var conversationType: ConversationType = .direct
@@ -75,6 +76,9 @@ class CreateConversationViewModel: ObservableObject {
                 currentUserId: currentUserId,
                 targetUserId: targetUserId
             )
+
+            // Show success feedback
+            toastManager.showSuccess("チャットを作成しました", icon: "bubble.left.and.bubble.right.fill")
         } catch {
             // Check if the error is a cancellation error (URLError -999)
             if let urlError = error as? URLError, urlError.code == .cancelled {
@@ -118,6 +122,9 @@ class CreateConversationViewModel: ObservableObject {
                 participantUserIds: Array(selectedUserIds),
                 groupName: groupName.trimmingCharacters(in: .whitespaces)
             )
+
+            // Show success feedback
+            toastManager.showSuccess("グループチャットを作成しました", icon: "person.3.fill")
         } catch {
             // Check if the error is a cancellation error (URLError -999)
             if let urlError = error as? URLError, urlError.code == .cancelled {

@@ -88,6 +88,7 @@ struct CreateConversationView: View {
                     dismiss()
                 }
             }
+            .toast(viewModel.toastManager)
         }
         .navigationViewStyle(.stack)
     }

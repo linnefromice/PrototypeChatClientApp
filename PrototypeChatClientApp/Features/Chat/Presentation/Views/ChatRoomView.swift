@@ -47,6 +47,7 @@ struct ChatRoomView: View {
         }
         .navigationTitle(conversationTitle)
         .navigationBarTitleDisplayMode(.inline)
+        .toast(viewModel.toastManager)
         .task {
             await viewModel.loadMessages()
         }

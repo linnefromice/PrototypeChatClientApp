@@ -8,6 +8,7 @@ class ChatRoomViewModel: ObservableObject {
     private let reactionUseCase: ReactionUseCaseProtocol
     private let conversationId: String
     let currentUserId: String
+    let toastManager = ToastManager()
 
     @Published var messages: [Message] = []
     @Published var messageText: String = ""
@@ -109,6 +110,9 @@ class ChatRoomViewModel: ObservableObject {
 
             // Add to local messages array
             messages.append(newMessage)
+
+            // Show success feedback
+            toastManager.showSuccess("メッセージを送信しました")
         } catch {
             let message = "メッセージの送信に失敗しました: \(error.localizedDescription)"
             print("❌ [ChatRoomViewModel] sendMessage failed - \(error)")
@@ -149,6 +153,9 @@ class ChatRoomViewModel: ObservableObject {
 
             // Update local state
             messageReactions[messageId, default: []].append(reaction)
+
+            // Show success feedback
+            toastManager.showSuccess("リアクションを追加しました", icon: "hand.thumbsup.fill")
         } catch {
             let message = "リアクションを追加できませんでした: \(error.localizedDescription)"
             print("❌ [ChatRoomViewModel] addReaction failed - \(error)")
@@ -221,6 +228,9 @@ class ChatRoomViewModel: ObservableObject {
                 }
             }
             messageReactions[messageId, default: []].append(reaction)
+
+            // Show success feedback
+            toastManager.showSuccess("リアクションを変更しました", icon: "hand.thumbsup.fill")
         } catch {
             errorMessage = "リアクションを変更できませんでした: \(error.localizedDescription)"
             showError = true
