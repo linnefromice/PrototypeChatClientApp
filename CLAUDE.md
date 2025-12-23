@@ -202,7 +202,7 @@ Infrastructure/
 - Generated client from OpenAPI spec
 - Code generation in `Infrastructure/Network/Generated/`
 
-See `Specs/Plans/API_LAYER_DESIGN_20251211_JA.md` for detailed design.
+See `Specs/API_LAYER_DESIGN.md` for detailed design.
 
 ## Environment Configuration
 
@@ -273,30 +273,89 @@ make info
 ```
 
 **See Also:**
-- Build configurations guide: `Docs/BUILD_CONFIGURATIONS.md`
-- Environment setup: `Docs/ENVIRONMENT_SETUP.md`
+- Build configurations guide: `Docs/Manuals/BUILD_CONFIGURATIONS.md`
+- Environment setup: `Docs/Manuals/ENVIRONMENT_SETUP.md`
 - AppConfig struct: `Infrastructure/Environment/AppConfig.swift`
+
+## Documentation Structure
+
+This project maintains a clear separation between design specifications and supporting documentation.
+
+### Directory Overview
+
+```
+Specs/                  # Design Master - Single Source of Truth
+├── README.md           # Documentation index and navigation
+└── *.md                # Latest design specifications (no dates)
+
+Docs/
+├── Plans/              # Future plans and proposals
+├── History/            # Analysis reports (with dates: *_YYYYMMDD.md)
+└── Manuals/            # Setup guides and procedures
+```
+
+### Documentation Categories
+
+**Specs/** - Design Master
+- Single source of truth for current design
+- Always up-to-date with implementation
+- No date suffixes in filenames
+- Examples: `IOS_APP_ARCHITECTURE.md`, `AUTH_DESIGN.md`, `API_LAYER_DESIGN.md`
+
+**Docs/Plans/** - Future Plans
+- Proposals and roadmaps
+- Future improvement plans
+- Examples: `CI_CD_ENVIRONMENT_PROPOSAL.md`, `COMPREHENSIVE_IMPROVEMENTS.md`
+
+**Docs/History/** - Analysis & Reports
+- Time-stamped analysis reports
+- Investigation results
+- All files include date suffix: `*_YYYYMMDD.md`
+- Examples: `ARCHITECTURE_ANALYSIS_20251222.md`, `REFACTORING_COST_ESTIMATION_20251223.md`
+
+**Docs/Manuals/** - Setup Guides
+- Step-by-step procedures
+- Configuration guides
+- Examples: `BUILD_CONFIGURATIONS.md`, `ENVIRONMENT_SETUP.md`, `XCODE_CONFIGURATION_GUIDE.md`
+
+See `Specs/README.md` for complete documentation index.
 
 ## Implementation Rules
 
-### Critical: Always Build After Code Changes
+### Critical: Always Build and Update Documentation After Code Changes
 
-**IMPORTANT:** After modifying any `*.swift` files, you MUST run `make build` to verify the changes compile successfully.
+**IMPORTANT:** After modifying any `*.swift` files, you MUST:
 
-```bash
-# After editing Swift files
-make build
+1. **Build and verify compilation:**
+   ```bash
+   # After editing Swift files
+   make build
 
-# If build fails, fix errors before proceeding
-make clean
-make build
-```
+   # If build fails, fix errors before proceeding
+   make clean
+   make build
+   ```
+
+2. **Check if documentation needs updates:**
+
+   Update **Specs/** if changes affect:
+   - Architecture or layer structure
+   - Feature design or API contracts
+   - Module dependencies
+   - Build system or environment configuration
+
+   Update **Docs/Manuals/** if changes affect:
+   - Setup procedures
+   - Build configurations
+   - Environment settings
+   - Development workflows
 
 This ensures:
 - Code compiles without errors
 - Dependencies are correctly resolved
 - No syntax or type errors are introduced
 - Changes integrate properly with existing code
+- **Documentation stays synchronized with implementation**
 
 ## Adding New Features
 
@@ -366,16 +425,20 @@ The folder structure is prepared for Swift Package Manager modularization:
 **Phase 2:** Extract Infrastructure modules (`InfrastructureNetwork`, `InfrastructureStorage`)
 **Phase 3:** Extract Feature modules (`FeatureAuthentication`, `FeatureConversationList`, etc.)
 
-See `Specs/Plans/MULTIMODULE_STRATEGY_20251211_JA.md` for detailed migration strategy.
+See `Specs/MULTIMODULE_STRATEGY.md` for detailed migration strategy.
 
 ## Design Documentation
 
-Comprehensive design docs in `Specs/Plans/`:
-- `MULTIMODULE_STRATEGY_20251211_JA.md` - Folder structure and module strategy
-- `IOS_APP_ARCHITECTURE_20251211_JA.md` - Overall architecture and tech stack
-- `API_LAYER_DESIGN_20251211_JA.md` - OpenAPI Generator integration plan
-- `AUTH_DESIGN_20251211_JA.md` - Authentication flow and implementation
-- `CLI_TOOLS_DESIGN_20251211_JA.md` - Makefile commands documentation
+Comprehensive design docs in `Specs/`:
+- `MULTIMODULE_STRATEGY.md` - Folder structure and module strategy
+- `IOS_APP_ARCHITECTURE.md` - Overall architecture and tech stack
+- `API_LAYER_DESIGN.md` - OpenAPI Generator integration plan
+- `AUTH_DESIGN.md` - Authentication flow and implementation
+- `CLI_TOOLS_DESIGN.md` - Makefile commands documentation
+- `CHAT_FEATURE_PLAN.md` - Chat feature design and implementation plan
+- `CLIENT_REQUIREMENTS.md` - Client requirements and specifications
+
+See `Specs/README.md` for complete documentation index.
 
 ## Common Issues
 
