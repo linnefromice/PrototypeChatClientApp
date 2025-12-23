@@ -10,15 +10,18 @@ class CreateConversationViewModel: ObservableObject {
     private let currentUserId: String
     let toastManager = ToastManager()
 
-    @Published var availableUsers: [User] = []
+    @Published var state: CreateConversationViewState = .idle
     @Published var conversationType: ConversationType = .direct
     @Published var selectedUserId: String?
     @Published var selectedUserIds: Set<String> = []
     @Published var groupName: String = ""
-    @Published var isLoading: Bool = false
-    @Published var errorMessage: String?
-    @Published var showError: Bool = false
-    @Published var createdConversation: ConversationDetail?
+
+    // Computed properties for backward compatibility
+    var availableUsers: [User] { state.availableUsers }
+    var isLoading: Bool { state.isLoading }
+    var errorMessage: String? { state.errorMessage }
+    var showError: Bool { state.showError }
+    var createdConversation: ConversationDetail? { state.createdConversation }
 
     // MARK: - Initialization
     init(
@@ -34,48 +37,43 @@ class CreateConversationViewModel: ObservableObject {
     // MARK: - Methods
     /// 選択可能なユーザー一覧を読み込む
     func loadAvailableUsers() async {
-        isLoading = true
-        errorMessage = nil
-        showError = false
+        state = .loadingUsers
 
         do {
-            availableUsers = try await userListUseCase.fetchAvailableUsers(excludingUserId: currentUserId)
+            let users = try await userListUseCase.fetchAvailableUsers(excludingUserId: currentUserId)
+            state = .usersLoaded(users)
         } catch {
             // Check if the error is a cancellation error (URLError -999)
             if let urlError = error as? URLError, urlError.code == .cancelled {
                 print("ℹ️ [CreateConversationViewModel] loadAvailableUsers cancelled")
-                // Don't show error to user for cancellation
+                // Don't change state for cancellation
             } else if (error as NSError).code == NSURLErrorCancelled {
                 print("ℹ️ [CreateConversationViewModel] loadAvailableUsers cancelled")
-                // Don't show error to user for cancellation
+                // Don't change state for cancellation
             } else {
                 let message = "ユーザー一覧の取得に失敗しました: \(error.localizedDescription)"
                 print("❌ [CreateConversationViewModel] loadAvailableUsers failed - \(error)")
-                errorMessage = message
-                showError = true
+                state = .error(message)
             }
         }
-
-        isLoading = false
     }
 
     /// 1:1チャットを作成
     func createDirectConversation() async {
         guard let targetUserId = selectedUserId else {
-            errorMessage = "ユーザーを選択してください"
-            showError = true
+            state = .error("ユーザーを選択してください")
             return
         }
 
-        isLoading = true
-        errorMessage = nil
-        showError = false
+        state = .creatingConversation
 
         do {
-            createdConversation = try await conversationUseCase.createDirectConversation(
+            let conversation = try await conversationUseCase.createDirectConversation(
                 currentUserId: currentUserId,
                 targetUserId: targetUserId
             )
+
+            state = .conversationCreated(conversation)
 
             // Show success feedback
             toastManager.showSuccess("チャットを作成しました", icon: "bubble.left.and.bubble.right.fill")
@@ -83,45 +81,40 @@ class CreateConversationViewModel: ObservableObject {
             // Check if the error is a cancellation error (URLError -999)
             if let urlError = error as? URLError, urlError.code == .cancelled {
                 print("ℹ️ [CreateConversationViewModel] createDirectConversation cancelled")
-                // Don't show error to user for cancellation
+                // Don't change state for cancellation
             } else if (error as NSError).code == NSURLErrorCancelled {
                 print("ℹ️ [CreateConversationViewModel] createDirectConversation cancelled")
-                // Don't show error to user for cancellation
+                // Don't change state for cancellation
             } else {
                 let message = "チャットの作成に失敗しました: \(error.localizedDescription)"
                 print("❌ [CreateConversationViewModel] createDirectConversation failed - \(error)")
-                errorMessage = message
-                showError = true
+                state = .error(message)
             }
         }
-
-        isLoading = false
     }
 
     /// グループチャットを作成
     func createGroupConversation() async {
         guard !groupName.trimmingCharacters(in: .whitespaces).isEmpty else {
-            errorMessage = "グループ名を入力してください"
-            showError = true
+            state = .error("グループ名を入力してください")
             return
         }
 
         guard selectedUserIds.count >= 2 else {
-            errorMessage = "参加者を2人以上選択してください"
-            showError = true
+            state = .error("参加者を2人以上選択してください")
             return
         }
 
-        isLoading = true
-        errorMessage = nil
-        showError = false
+        state = .creatingConversation
 
         do {
-            createdConversation = try await conversationUseCase.createGroupConversation(
+            let conversation = try await conversationUseCase.createGroupConversation(
                 currentUserId: currentUserId,
                 participantUserIds: Array(selectedUserIds),
                 groupName: groupName.trimmingCharacters(in: .whitespaces)
             )
+
+            state = .conversationCreated(conversation)
 
             // Show success feedback
             toastManager.showSuccess("グループチャットを作成しました", icon: "person.3.fill")
@@ -129,19 +122,16 @@ class CreateConversationViewModel: ObservableObject {
             // Check if the error is a cancellation error (URLError -999)
             if let urlError = error as? URLError, urlError.code == .cancelled {
                 print("ℹ️ [CreateConversationViewModel] createGroupConversation cancelled")
-                // Don't show error to user for cancellation
+                // Don't change state for cancellation
             } else if (error as NSError).code == NSURLErrorCancelled {
                 print("ℹ️ [CreateConversationViewModel] createGroupConversation cancelled")
-                // Don't show error to user for cancellation
+                // Don't change state for cancellation
             } else {
                 let message = "グループチャットの作成に失敗しました: \(error.localizedDescription)"
                 print("❌ [CreateConversationViewModel] createGroupConversation failed - \(error)")
-                errorMessage = message
-                showError = true
+                state = .error(message)
             }
         }
-
-        isLoading = false
     }
 
     /// ユーザー選択を切り替え（グループモード用）

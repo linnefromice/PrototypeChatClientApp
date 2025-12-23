@@ -8,10 +8,13 @@ class ConversationListViewModel: ObservableObject {
     private let conversationUseCase: ConversationUseCaseProtocol
     let currentUserId: String
 
-    @Published var conversations: [ConversationDetail] = []
-    @Published var isLoading: Bool = false
-    @Published var errorMessage: String?
-    @Published var showError: Bool = false
+    @Published var state: ConversationListViewState = .idle
+
+    // Computed properties for backward compatibility
+    var conversations: [ConversationDetail] { state.conversations }
+    var isLoading: Bool { state.isLoading }
+    var errorMessage: String? { state.errorMessage }
+    var showError: Bool { state.showError }
 
     // MARK: - Initialization
     init(
@@ -25,29 +28,29 @@ class ConversationListViewModel: ObservableObject {
     // MARK: - Methods
     /// 会話一覧を読み込む
     func loadConversations() async {
-        isLoading = true
-        errorMessage = nil
-        showError = false
+        // Keep existing conversations during loading for better UX
+        let currentConversations = state.conversations
+        state = .loading
 
         do {
-            conversations = try await conversationUseCase.fetchConversations(userId: currentUserId)
+            let fetchedConversations = try await conversationUseCase.fetchConversations(userId: currentUserId)
+            state = .loaded(fetchedConversations)
         } catch {
             // Check if the error is a cancellation error (URLError -999)
             if let urlError = error as? URLError, urlError.code == .cancelled {
                 print("ℹ️ [ConversationListViewModel] loadConversations cancelled - This is normal during refresh")
-                // Don't show error to user for cancellation
+                // Restore previous conversations on cancellation
+                state = .loaded(currentConversations)
             } else if (error as NSError).code == NSURLErrorCancelled {
                 print("ℹ️ [ConversationListViewModel] loadConversations cancelled - This is normal during refresh")
-                // Don't show error to user for cancellation
+                // Restore previous conversations on cancellation
+                state = .loaded(currentConversations)
             } else {
                 let message = "会話一覧の取得に失敗しました: \(error.localizedDescription)"
                 print("❌ [ConversationListViewModel] loadConversations failed - \(error)")
-                errorMessage = message
-                showError = true
+                state = .error(message, currentConversations)
             }
         }
-
-        isLoading = false
     }
 
     /// 会話のタイトルを取得
