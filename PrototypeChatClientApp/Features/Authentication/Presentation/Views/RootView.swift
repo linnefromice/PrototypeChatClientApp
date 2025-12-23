@@ -8,13 +8,7 @@ struct RootView: View {
         Group {
             if isValidatingSession {
                 // セッション検証中
-                VStack(spacing: 16) {
-                    ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle())
-                    Text("認証情報を確認中...")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
+                LoadingView(message: "認証情報を確認中...")
             } else if authViewModel.isAuthenticated {
                 // 認証済み: メイン画面へ
                 MainView()

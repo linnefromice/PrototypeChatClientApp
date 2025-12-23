@@ -48,20 +48,19 @@ struct CreateConversationView: View {
                 // User list
                 Group {
                     if viewModel.isLoading {
-                        ProgressView("読み込み中...")
-                    } else if viewModel.availableUsers.isEmpty {
-                        VStack(spacing: 16) {
-                            Image(systemName: "person.3")
-                                .font(.system(size: 48))
-                                .foregroundColor(.gray)
-                            Text("ユーザーが見つかりません")
-                                .font(.headline)
-                            Text("チャットを開始できるユーザーがいません")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                                .multilineTextAlignment(.center)
-                                .padding(.horizontal)
+                        LoadingView(message: "ユーザーを読み込み中...")
+                    } else if viewModel.showError, let errorMessage = viewModel.errorMessage {
+                        ErrorView(message: errorMessage) {
+                            Task {
+                                await viewModel.loadAvailableUsers()
+                            }
                         }
+                    } else if viewModel.availableUsers.isEmpty {
+                        EmptyStateView(
+                            icon: "person.3",
+                            title: "ユーザーが見つかりません",
+                            message: "チャットを開始できるユーザーがいません"
+                        )
                     } else {
                         userList
                     }
@@ -80,13 +79,6 @@ struct CreateConversationView: View {
                 }
                 .disabled(!viewModel.canCreate)
             )
-            .alert(isPresented: $viewModel.showError) {
-                Alert(
-                    title: Text("エラー"),
-                    message: Text(viewModel.errorMessage ?? "不明なエラー"),
-                    dismissButton: .default(Text("OK"))
-                )
-            }
             .task {
                 await viewModel.loadAvailableUsers()
             }
@@ -96,6 +88,7 @@ struct CreateConversationView: View {
                     dismiss()
                 }
             }
+            .toast(viewModel.toastManager)
         }
         .navigationViewStyle(.stack)
     }

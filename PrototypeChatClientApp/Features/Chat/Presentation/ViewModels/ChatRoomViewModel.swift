@@ -8,14 +8,18 @@ class ChatRoomViewModel: ObservableObject {
     private let reactionUseCase: ReactionUseCaseProtocol
     private let conversationId: String
     let currentUserId: String
+    let toastManager = ToastManager()
 
-    @Published var messages: [Message] = []
+    @Published var state: ChatRoomViewState = .idle
     @Published var messageText: String = ""
-    @Published var isLoading: Bool = false
-    @Published var isSending: Bool = false
-    @Published var errorMessage: String?
-    @Published var showError: Bool = false
     @Published var messageReactions: [String: [Reaction]] = [:]
+
+    // Computed properties for backward compatibility
+    var messages: [Message] { state.messages }
+    var isLoading: Bool { state.isLoading }
+    var isSending: Bool { state.isSending }
+    var errorMessage: String? { state.errorMessage }
+    var showError: Bool { state.showError }
 
     // MARK: - Initialization
     init(
@@ -32,9 +36,7 @@ class ChatRoomViewModel: ObservableObject {
 
     // MARK: - Methods
     func loadMessages() async {
-        isLoading = true
-        errorMessage = nil
-        showError = false
+        state = .loading
 
         do {
             let fetchedMessages = try await messageUseCase.fetchMessages(
@@ -44,7 +46,8 @@ class ChatRoomViewModel: ObservableObject {
             )
 
             // Sort messages by createdAt ascending (oldest first, newest at bottom)
-            messages = fetchedMessages.sorted { $0.createdAt < $1.createdAt }
+            let sortedMessages = fetchedMessages.sorted { $0.createdAt < $1.createdAt }
+            state = .loaded(sortedMessages)
 
             // Load reactions for all messages
             await loadReactionsForMessages()
@@ -56,12 +59,9 @@ class ChatRoomViewModel: ObservableObject {
             } else {
                 let message = "メッセージの取得に失敗しました: \(error.localizedDescription)"
                 print("❌ [ChatRoomViewModel] loadMessages failed - \(error)")
-                errorMessage = message
-                showError = true
+                state = .error(message, [])
             }
         }
-
-        isLoading = false
     }
 
     private func loadReactionsForMessages() async {
@@ -96,9 +96,8 @@ class ChatRoomViewModel: ObservableObject {
         let textToSend = messageText
         messageText = "" // Clear immediately for better UX
 
-        isSending = true
-        errorMessage = nil
-        showError = false
+        let currentMessages = state.messages
+        state = .sendingMessage(currentMessages)
 
         do {
             let newMessage = try await messageUseCase.sendMessage(
@@ -108,18 +107,20 @@ class ChatRoomViewModel: ObservableObject {
             )
 
             // Add to local messages array
-            messages.append(newMessage)
+            var updatedMessages = currentMessages
+            updatedMessages.append(newMessage)
+            state = .loaded(updatedMessages)
+
+            // Show success feedback
+            toastManager.showSuccess("メッセージを送信しました")
         } catch {
             let message = "メッセージの送信に失敗しました: \(error.localizedDescription)"
             print("❌ [ChatRoomViewModel] sendMessage failed - \(error)")
-            errorMessage = message
-            showError = true
+            state = .error(message, currentMessages)
 
             // Restore text on error
             messageText = textToSend
         }
-
-        isSending = false
     }
 
     var canSendMessage: Bool {
@@ -135,8 +136,7 @@ class ChatRoomViewModel: ObservableObject {
         // Prevent reacting to own messages
         guard let message = messages.first(where: { $0.id == messageId }),
               !isOwnMessage(message) else {
-            errorMessage = "自分のメッセージにはリアクションできません"
-            showError = true
+            state = .error("自分のメッセージにはリアクションできません", state.messages)
             return
         }
 
@@ -149,11 +149,13 @@ class ChatRoomViewModel: ObservableObject {
 
             // Update local state
             messageReactions[messageId, default: []].append(reaction)
+
+            // Show success feedback
+            toastManager.showSuccess("リアクションを追加しました", icon: "hand.thumbsup.fill")
         } catch {
             let message = "リアクションを追加できませんでした: \(error.localizedDescription)"
             print("❌ [ChatRoomViewModel] addReaction failed - \(error)")
-            errorMessage = message
-            showError = true
+            state = .error(message, state.messages)
         }
     }
 
@@ -161,8 +163,7 @@ class ChatRoomViewModel: ObservableObject {
         // Prevent reacting to own messages
         guard let message = messages.first(where: { $0.id == messageId }),
               !isOwnMessage(message) else {
-            errorMessage = "自分のメッセージにはリアクションできません"
-            showError = true
+            state = .error("自分のメッセージにはリアクションできません", state.messages)
             return
         }
 
@@ -180,8 +181,7 @@ class ChatRoomViewModel: ObservableObject {
         } catch {
             let message = "リアクションを削除できませんでした: \(error.localizedDescription)"
             print("❌ [ChatRoomViewModel] removeReaction failed - \(error)")
-            errorMessage = message
-            showError = true
+            state = .error(message, state.messages)
         }
     }
 
@@ -189,8 +189,7 @@ class ChatRoomViewModel: ObservableObject {
         // Prevent reacting to own messages
         guard let message = messages.first(where: { $0.id == messageId }),
               !isOwnMessage(message) else {
-            errorMessage = "自分のメッセージにはリアクションできません"
-            showError = true
+            state = .error("自分のメッセージにはリアクションできません", state.messages)
             return
         }
 
@@ -221,9 +220,13 @@ class ChatRoomViewModel: ObservableObject {
                 }
             }
             messageReactions[messageId, default: []].append(reaction)
+
+            // Show success feedback
+            toastManager.showSuccess("リアクションを変更しました", icon: "hand.thumbsup.fill")
         } catch {
-            errorMessage = "リアクションを変更できませんでした: \(error.localizedDescription)"
-            showError = true
+            let message = "リアクションを変更できませんでした: \(error.localizedDescription)"
+            print("❌ [ChatRoomViewModel] toggleReaction failed - \(error)")
+            state = .error(message, state.messages)
         }
     }
 

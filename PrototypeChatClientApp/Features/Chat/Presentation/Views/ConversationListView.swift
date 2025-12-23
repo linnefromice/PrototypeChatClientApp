@@ -16,20 +16,19 @@ struct ConversationListView: View {
         NavigationView {
             Group {
                 if viewModel.isLoading {
-                    ProgressView("読み込み中...")
-                } else if viewModel.conversations.isEmpty {
-                    VStack(spacing: 16) {
-                        Image(systemName: "bubble.left.and.bubble.right")
-                            .font(.system(size: 48))
-                            .foregroundColor(.gray)
-                        Text("チャットがありません")
-                            .font(.headline)
-                        Text("右上の + ボタンから新しいチャットを作成できます")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal)
+                    LoadingView(message: "会話を読み込み中...")
+                } else if viewModel.showError, let errorMessage = viewModel.errorMessage {
+                    ErrorView(message: errorMessage) {
+                        Task {
+                            await viewModel.loadConversations()
+                        }
                     }
+                } else if viewModel.conversations.isEmpty {
+                    EmptyStateView(
+                        icon: "bubble.left.and.bubble.right",
+                        title: "チャットがありません",
+                        message: "右上の + ボタンから新しいチャットを作成できます"
+                    )
                 } else {
                     conversationList
                 }
@@ -64,13 +63,6 @@ struct ConversationListView: View {
                 NavigationMenuView(onLogout: {
                     showLogoutConfirmation = true
                 })
-            }
-            .alert(isPresented: $viewModel.showError) {
-                Alert(
-                    title: Text("エラー"),
-                    message: Text(viewModel.errorMessage ?? "不明なエラー"),
-                    dismissButton: .default(Text("OK"))
-                )
             }
             .alert("ログアウト", isPresented: $showLogoutConfirmation) {
                 Button("キャンセル", role: .cancel) { }

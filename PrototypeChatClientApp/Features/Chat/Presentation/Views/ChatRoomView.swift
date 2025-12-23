@@ -15,9 +15,19 @@ struct ChatRoomView: View {
     var body: some View {
         VStack(spacing: 0) {
             if viewModel.isLoading && viewModel.messages.isEmpty {
-                loadingView
+                LoadingView(message: "メッセージを読み込み中...")
+            } else if viewModel.showError, let errorMessage = viewModel.errorMessage {
+                ErrorView(message: errorMessage) {
+                    Task {
+                        await viewModel.loadMessages()
+                    }
+                }
             } else if viewModel.messages.isEmpty {
-                emptyStateView
+                EmptyStateView(
+                    icon: "bubble.left.and.bubble.right",
+                    title: "まだメッセージがありません",
+                    message: "下のフィールドからメッセージを送信しましょう"
+                )
             } else {
                 messageListView
             }
@@ -37,13 +47,7 @@ struct ChatRoomView: View {
         }
         .navigationTitle(conversationTitle)
         .navigationBarTitleDisplayMode(.inline)
-        .alert(isPresented: $viewModel.showError) {
-            Alert(
-                title: Text("エラー"),
-                message: Text(viewModel.errorMessage ?? "不明なエラー"),
-                dismissButton: .default(Text("OK"))
-            )
-        }
+        .toast(viewModel.toastManager)
         .task {
             await viewModel.loadMessages()
         }
@@ -94,35 +98,6 @@ struct ChatRoomView: View {
                 }
             }
         }
-    }
-
-    private var emptyStateView: some View {
-        VStack {
-            Spacer()
-            VStack(spacing: 16) {
-                Image(systemName: "bubble.left.and.bubble.right")
-                    .font(.system(size: 48))
-                    .foregroundColor(.gray)
-                Text("まだメッセージがありません")
-                    .font(.headline)
-                    .foregroundColor(.secondary)
-            }
-            Spacer()
-        }
-        .frame(maxHeight: .infinity)
-    }
-
-    private var loadingView: some View {
-        VStack {
-            Spacer()
-            VStack(spacing: 16) {
-                ProgressView()
-                Text("読み込み中...")
-                    .foregroundColor(.secondary)
-            }
-            Spacer()
-        }
-        .frame(maxHeight: .infinity)
     }
 
     private var conversationTitle: String {
