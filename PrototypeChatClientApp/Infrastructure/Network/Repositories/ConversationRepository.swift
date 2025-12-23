@@ -32,12 +32,16 @@ class ConversationRepository: ConversationRepositoryProtocol {
                 }
                 return result
             case .undocumented(statusCode: let code, let body):
-                let error = NetworkError.from(statusCode: code)
-                var bodyString = "N/A"
+                // Extract error message from response body (supports RFC 7807)
+                var errorMessage: String?
                 if let httpBody = body.body {
-                    bodyString = (try? await String(collecting: httpBody, upTo: 10000)) ?? "N/A"
+                    if let bodyData = try? await Data(collecting: httpBody, upTo: 10000) {
+                        errorMessage = NetworkError.parseErrorMessage(from: bodyData)
+                    }
                 }
-                print("❌ [ConversationRepository] fetchConversations failed - Status: \(code), Error: \(error), Body: \(bodyString)")
+
+                let error = NetworkError.from(statusCode: code, message: errorMessage)
+                print("❌ [ConversationRepository] fetchConversations failed - Status: \(code), Error: \(error), Message: \(errorMessage ?? "N/A")")
                 throw error
             }
         } catch let error as NetworkError {
@@ -76,12 +80,16 @@ class ConversationRepository: ConversationRepositoryProtocol {
                 let conversationDTO = try createdResponse.body.json
                 return try await conversationDTO.toDomain()
             case .undocumented(statusCode: let code, let body):
-                let error = NetworkError.from(statusCode: code)
-                var bodyString = "N/A"
+                // Extract error message from response body (supports RFC 7807)
+                var errorMessage: String?
                 if let httpBody = body.body {
-                    bodyString = (try? await String(collecting: httpBody, upTo: 10000)) ?? "N/A"
+                    if let bodyData = try? await Data(collecting: httpBody, upTo: 10000) {
+                        errorMessage = NetworkError.parseErrorMessage(from: bodyData)
+                    }
                 }
-                print("❌ [ConversationRepository] createConversation failed - Status: \(code), Error: \(error), Body: \(bodyString)")
+
+                let error = NetworkError.from(statusCode: code, message: errorMessage)
+                print("❌ [ConversationRepository] createConversation failed - Status: \(code), Error: \(error), Message: \(errorMessage ?? "N/A")")
                 throw error
             }
         } catch let error as NetworkError {

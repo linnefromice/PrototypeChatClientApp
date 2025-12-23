@@ -53,4 +53,59 @@ enum NetworkError: LocalizedError {
             return .unknown
         }
     }
+
+    /// HTTPステータスコードとメッセージからNetworkErrorにマッピング (RFC 7807対応)
+    static func from(statusCode: Int, message: String?) -> NetworkError {
+        switch statusCode {
+        case 400:
+            return .validationError(message: message ?? "不正なリクエストです")
+        case 401:
+            return .unauthorized
+        case 404:
+            return .notFound
+        case 500...599:
+            return .serverError(statusCode: statusCode, message: message)
+        default:
+            return .unknown
+        }
+    }
+}
+
+// MARK: - RFC 7807 Support
+
+/// RFC 7807 Problem Details for HTTP APIs
+struct RFC7807ErrorResponse: Decodable {
+    let type: String
+    let title: String
+    let detail: String
+    let status: Int
+    let instance: String?
+
+    /// Get human-readable error message
+    var message: String {
+        detail
+    }
+}
+
+extension NetworkError {
+    /// Parse error message from response data (supports both RFC 7807 and legacy format)
+    static func parseErrorMessage(from data: Data) -> String? {
+        // Try RFC 7807 format first
+        if let rfc7807Error = try? JSONDecoder().decode(RFC7807ErrorResponse.self, from: data) {
+            return rfc7807Error.message
+        }
+
+        // Fallback to legacy format
+        struct LegacyErrorResponse: Decodable {
+            let error: String?
+            let message: String
+        }
+
+        if let legacyError = try? JSONDecoder().decode(LegacyErrorResponse.self, from: data) {
+            return legacyError.message
+        }
+
+        // Fallback to raw string
+        return String(data: data, encoding: .utf8)
+    }
 }

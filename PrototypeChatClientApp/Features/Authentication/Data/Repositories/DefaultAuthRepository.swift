@@ -39,29 +39,28 @@ class DefaultAuthRepository: AuthenticationRepositoryProtocol {
             let authResponse = try JSONDecoder().decode(AuthResponse.self, from: data)
             return try authResponse.toAuthSession()
         case 400:
-            // Parse error message to determine if it's duplicate username/email
-            let errorString = String(data: data, encoding: .utf8) ?? "Unknown error"
-            print("❌ [DefaultAuthRepository] signUp failed (400): \(errorString)")
+            // Parse error message (supports RFC 7807 and legacy format)
+            let errorMessage = parseErrorMessage(from: data)
+            print("❌ [DefaultAuthRepository] signUp failed (400): \(errorMessage)")
 
-            if let errorResponse = try? JSONDecoder().decode(ErrorResponse.self, from: data) {
-                if errorResponse.message.contains("username") || errorResponse.message.contains("Username") {
-                    throw AuthenticationError.usernameAlreadyExists
-                } else if errorResponse.message.contains("email") || errorResponse.message.contains("Email") {
-                    throw AuthenticationError.emailAlreadyExists
-                }
+            // Check for specific error conditions
+            if isUsernameExistsError(errorMessage) {
+                throw AuthenticationError.usernameAlreadyExists
+            } else if isEmailExistsError(errorMessage) {
+                throw AuthenticationError.emailAlreadyExists
             }
             throw AuthenticationError.invalidCredentials
         case 401:
-            let errorString = String(data: data, encoding: .utf8) ?? "Unknown error"
-            print("❌ [DefaultAuthRepository] signUp failed (401): \(errorString)")
+            let errorMessage = parseErrorMessage(from: data)
+            print("❌ [DefaultAuthRepository] signUp failed (401): \(errorMessage)")
             throw AuthenticationError.invalidCredentials
         case 500...599:
-            let errorString = String(data: data, encoding: .utf8) ?? "Unknown error"
-            print("❌ [DefaultAuthRepository] signUp failed (\(httpResponse.statusCode)): \(errorString)")
+            let errorMessage = parseErrorMessage(from: data)
+            print("❌ [DefaultAuthRepository] signUp failed (\(httpResponse.statusCode)): \(errorMessage)")
             throw AuthenticationError.serverError
         default:
-            let errorString = String(data: data, encoding: .utf8) ?? "Unknown error"
-            print("❌ [DefaultAuthRepository] signUp failed (\(httpResponse.statusCode)): \(errorString)")
+            let errorMessage = parseErrorMessage(from: data)
+            print("❌ [DefaultAuthRepository] signUp failed (\(httpResponse.statusCode)): \(errorMessage)")
             throw AuthenticationError.networkError
         }
     }
@@ -106,16 +105,16 @@ class DefaultAuthRepository: AuthenticationRepositoryProtocol {
 
             return try authResponse.toAuthSession()
         case 401:
-            let errorString = String(data: data, encoding: .utf8) ?? "Unknown error"
-            print("❌ [DefaultAuthRepository] signIn failed (401): \(errorString)")
+            let errorMessage = parseErrorMessage(from: data)
+            print("❌ [DefaultAuthRepository] signIn failed (401): \(errorMessage)")
             throw AuthenticationError.invalidCredentials
         case 500...599:
-            let errorString = String(data: data, encoding: .utf8) ?? "Unknown error"
-            print("❌ [DefaultAuthRepository] signIn failed (\(httpResponse.statusCode)): \(errorString)")
+            let errorMessage = parseErrorMessage(from: data)
+            print("❌ [DefaultAuthRepository] signIn failed (\(httpResponse.statusCode)): \(errorMessage)")
             throw AuthenticationError.serverError
         default:
-            let errorString = String(data: data, encoding: .utf8) ?? "Unknown error"
-            print("❌ [DefaultAuthRepository] signIn failed (\(httpResponse.statusCode)): \(errorString)")
+            let errorMessage = parseErrorMessage(from: data)
+            print("❌ [DefaultAuthRepository] signIn failed (\(httpResponse.statusCode)): \(errorMessage)")
             throw AuthenticationError.networkError
         }
     }
@@ -142,12 +141,12 @@ class DefaultAuthRepository: AuthenticationRepositoryProtocol {
             print("ℹ️ [DefaultAuthRepository] getSession - No valid session (401)")
             return nil
         case 500...599:
-            let errorString = String(data: data, encoding: .utf8) ?? "Unknown error"
-            print("❌ [DefaultAuthRepository] getSession failed (\(httpResponse.statusCode)): \(errorString)")
+            let errorMessage = parseErrorMessage(from: data)
+            print("❌ [DefaultAuthRepository] getSession failed (\(httpResponse.statusCode)): \(errorMessage)")
             throw AuthenticationError.serverError
         default:
-            let errorString = String(data: data, encoding: .utf8) ?? "Unknown error"
-            print("❌ [DefaultAuthRepository] getSession failed (\(httpResponse.statusCode)): \(errorString)")
+            let errorMessage = parseErrorMessage(from: data)
+            print("❌ [DefaultAuthRepository] getSession failed (\(httpResponse.statusCode)): \(errorMessage)")
             throw AuthenticationError.networkError
         }
     }
@@ -173,9 +172,8 @@ class DefaultAuthRepository: AuthenticationRepositoryProtocol {
         print("ℹ️ [DefaultAuthRepository] signOut status: \(httpResponse.statusCode)")
 
         guard (200...299).contains(httpResponse.statusCode) else {
-            if let errorString = String(data: data, encoding: .utf8) {
-                print("❌ [DefaultAuthRepository] signOut failed (\(httpResponse.statusCode)): \(errorString)")
-            }
+            let errorMessage = parseErrorMessage(from: data)
+            print("❌ [DefaultAuthRepository] signOut failed (\(httpResponse.statusCode)): \(errorMessage)")
             throw AuthenticationError.serverError
         }
 
@@ -267,13 +265,22 @@ private struct AuthResponse: Decodable {
     }
 }
 
-private struct ErrorResponse: Decodable {
-    let error: String?
-    let message: String
+// MARK: - Error Handling Helpers
 
-    enum CodingKeys: String, CodingKey {
-        case error
-        case message
+extension DefaultAuthRepository {
+    /// Parse error message from response data (supports both RFC 7807 and legacy format)
+    private func parseErrorMessage(from data: Data) -> String {
+        NetworkError.parseErrorMessage(from: data) ?? "Unknown error"
+    }
+
+    /// Check if error message indicates username already exists
+    private func isUsernameExistsError(_ message: String) -> Bool {
+        message.lowercased().contains("username")
+    }
+
+    /// Check if error message indicates email already exists
+    private func isEmailExistsError(_ message: String) -> Bool {
+        message.lowercased().contains("email")
     }
 }
 

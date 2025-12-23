@@ -25,12 +25,16 @@ class UserRepository: UserRepositoryProtocol {
                 print("❌ [UserRepository] fetchUser failed - User not found: \(id)")
                 throw NetworkError.notFound
             case .undocumented(statusCode: let code, let body):
-                let error = NetworkError.from(statusCode: code)
-                var bodyString = "N/A"
+                // Extract error message from response body (supports RFC 7807)
+                var errorMessage: String?
                 if let httpBody = body.body {
-                    bodyString = (try? await String(collecting: httpBody, upTo: 10000)) ?? "N/A"
+                    if let bodyData = try? await Data(collecting: httpBody, upTo: 10000) {
+                        errorMessage = NetworkError.parseErrorMessage(from: bodyData)
+                    }
                 }
-                print("❌ [UserRepository] fetchUser failed - Status: \(code), Error: \(error), Body: \(bodyString)")
+
+                let error = NetworkError.from(statusCode: code, message: errorMessage)
+                print("❌ [UserRepository] fetchUser failed - Status: \(code), Error: \(error), Message: \(errorMessage ?? "N/A")")
                 throw error
             }
         } catch let error as NetworkError {
@@ -56,12 +60,16 @@ class UserRepository: UserRepositoryProtocol {
                 print("❌ [UserRepository] fetchUsers failed - Forbidden (403)")
                 throw NetworkError.unauthorized
             case .undocumented(statusCode: let code, let body):
-                let error = NetworkError.from(statusCode: code)
-                var bodyString = "N/A"
+                // Extract error message from response body (supports RFC 7807)
+                var errorMessage: String?
                 if let httpBody = body.body {
-                    bodyString = (try? await String(collecting: httpBody, upTo: 10000)) ?? "N/A"
+                    if let bodyData = try? await Data(collecting: httpBody, upTo: 10000) {
+                        errorMessage = NetworkError.parseErrorMessage(from: bodyData)
+                    }
                 }
-                print("❌ [UserRepository] fetchUsers failed - Status: \(code), Error: \(error), Body: \(bodyString)")
+
+                let error = NetworkError.from(statusCode: code, message: errorMessage)
+                print("❌ [UserRepository] fetchUsers failed - Status: \(code), Error: \(error), Message: \(errorMessage ?? "N/A")")
                 throw error
             }
         } catch let error as NetworkError {
@@ -99,12 +107,16 @@ class UserRepository: UserRepositoryProtocol {
                 print("❌ [UserRepository] createUser failed - Forbidden (403)")
                 throw NetworkError.unauthorized
             case .undocumented(statusCode: let code, let body):
-                let error = NetworkError.from(statusCode: code)
-                var bodyString = "N/A"
+                // Extract error message from response body (supports RFC 7807)
+                var errorMessage: String?
                 if let httpBody = body.body {
-                    bodyString = (try? await String(collecting: httpBody, upTo: 10000)) ?? "N/A"
+                    if let bodyData = try? await Data(collecting: httpBody, upTo: 10000) {
+                        errorMessage = NetworkError.parseErrorMessage(from: bodyData)
+                    }
                 }
-                print("❌ [UserRepository] createUser failed - Status: \(code), Error: \(error), Body: \(bodyString)")
+
+                let error = NetworkError.from(statusCode: code, message: errorMessage)
+                print("❌ [UserRepository] createUser failed - Status: \(code), Error: \(error), Message: \(errorMessage ?? "N/A")")
                 throw error
             }
         } catch let error as NetworkError {
@@ -137,12 +149,16 @@ class UserRepository: UserRepositoryProtocol {
                 print("❌ [UserRepository] loginByIdAlias failed - User not found: \(idAlias) (404)")
                 throw NetworkError.notFound
             case .undocumented(statusCode: let code, let body):
-                let error = NetworkError.from(statusCode: code)
-                var bodyString = "N/A"
+                // Extract error message from response body (supports RFC 7807)
+                var errorMessage: String?
                 if let httpBody = body.body {
-                    bodyString = (try? await String(collecting: httpBody, upTo: 10000)) ?? "N/A"
+                    if let bodyData = try? await Data(collecting: httpBody, upTo: 10000) {
+                        errorMessage = NetworkError.parseErrorMessage(from: bodyData)
+                    }
                 }
-                print("❌ [UserRepository] loginByIdAlias failed - Status: \(code), Body: \(bodyString)")
+
+                let error = NetworkError.from(statusCode: code, message: errorMessage)
+                print("❌ [UserRepository] loginByIdAlias failed - Status: \(code), Error: \(error), Message: \(errorMessage ?? "N/A")")
                 throw error
             }
         } catch let error as NetworkError {

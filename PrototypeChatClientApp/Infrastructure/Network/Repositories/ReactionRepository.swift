@@ -25,12 +25,16 @@ class ReactionRepository: ReactionRepositoryProtocol {
                 print("❌ [ReactionRepository] fetchReactions - Message not found")
                 throw NetworkError.notFound
             case .undocumented(statusCode: let code, let body):
-                let error = NetworkError.from(statusCode: code)
-                var bodyString = "N/A"
+                // Extract error message from response body (supports RFC 7807)
+                var errorMessage: String?
                 if let httpBody = body.body {
-                    bodyString = (try? await String(collecting: httpBody, upTo: 10000)) ?? "N/A"
+                    if let bodyData = try? await Data(collecting: httpBody, upTo: 10000) {
+                        errorMessage = NetworkError.parseErrorMessage(from: bodyData)
+                    }
                 }
-                print("❌ [ReactionRepository] fetchReactions failed - Status: \(code), Error: \(error), Body: \(bodyString)")
+
+                let error = NetworkError.from(statusCode: code, message: errorMessage)
+                print("❌ [ReactionRepository] fetchReactions failed - Status: \(code), Error: \(error), Message: \(errorMessage ?? "N/A")")
                 throw error
             }
         } catch let error as NetworkError {
@@ -59,12 +63,16 @@ class ReactionRepository: ReactionRepositoryProtocol {
                 let reactionDTO = try createdResponse.body.json
                 return reactionDTO.toDomain()
             case .undocumented(statusCode: let code, let body):
-                let error = NetworkError.from(statusCode: code)
-                var bodyString = "N/A"
+                // Extract error message from response body (supports RFC 7807)
+                var errorMessage: String?
                 if let httpBody = body.body {
-                    bodyString = (try? await String(collecting: httpBody, upTo: 10000)) ?? "N/A"
+                    if let bodyData = try? await Data(collecting: httpBody, upTo: 10000) {
+                        errorMessage = NetworkError.parseErrorMessage(from: bodyData)
+                    }
                 }
-                print("❌ [ReactionRepository] addReaction failed - Status: \(code), Error: \(error), Body: \(bodyString)")
+
+                let error = NetworkError.from(statusCode: code, message: errorMessage)
+                print("❌ [ReactionRepository] addReaction failed - Status: \(code), Error: \(error), Message: \(errorMessage ?? "N/A")")
                 throw error
             }
         } catch let error as NetworkError {
@@ -91,12 +99,16 @@ class ReactionRepository: ReactionRepositoryProtocol {
                 print("✅ [ReactionRepository] removeReaction succeeded")
                 return
             case .undocumented(statusCode: let code, let body):
-                let error = NetworkError.from(statusCode: code)
-                var bodyString = "N/A"
+                // Extract error message from response body (supports RFC 7807)
+                var errorMessage: String?
                 if let httpBody = body.body {
-                    bodyString = (try? await String(collecting: httpBody, upTo: 10000)) ?? "N/A"
+                    if let bodyData = try? await Data(collecting: httpBody, upTo: 10000) {
+                        errorMessage = NetworkError.parseErrorMessage(from: bodyData)
+                    }
                 }
-                print("❌ [ReactionRepository] removeReaction failed - Status: \(code), Error: \(error), Body: \(bodyString)")
+
+                let error = NetworkError.from(statusCode: code, message: errorMessage)
+                print("❌ [ReactionRepository] removeReaction failed - Status: \(code), Error: \(error), Message: \(errorMessage ?? "N/A")")
                 throw error
             }
         } catch let error as NetworkError {
