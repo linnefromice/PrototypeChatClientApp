@@ -4,6 +4,7 @@ import SwiftUI
 struct NavigationMenuView: View {
     @SwiftUI.Environment(\.dismiss) private var dismiss
     @EnvironmentObject var authViewModel: AuthenticationViewModel
+    @StateObject private var colorSchemeManager = ColorSchemeManager.shared
     let onLogout: () -> Void
 
     var body: some View {
@@ -19,14 +20,39 @@ struct NavigationMenuView: View {
                     .accessibilityLabel("アカウント")
                 }
 
-                // Logout button
-                Button(role: .destructive, action: {
-                    dismiss()
-                    onLogout()
-                }) {
-                    Label("ログアウト", systemImage: "rectangle.portrait.and.arrow.right")
+                // Color scheme selection
+                Section {
+                    ForEach(ColorSchemePreference.allCases) { preference in
+                        Button(action: {
+                            colorSchemeManager.setPreference(preference)
+                        }) {
+                            HStack {
+                                Image(systemName: preference.icon)
+                                    .frame(width: 24)
+                                Text(preference.displayName)
+                                    .foregroundColor(App.Color.Text.Default.primary)
+                                Spacer()
+                                if colorSchemeManager.preference == preference {
+                                    Image(systemName: "checkmark")
+                                        .foregroundColor(App.Color.Brand.primary)
+                                }
+                            }
+                        }
+                    }
+                } header: {
+                    Text("カラーテーマ")
                 }
-                .accessibilityLabel("ログアウト")
+
+                // Logout button
+                Section {
+                    Button(role: .destructive, action: {
+                        dismiss()
+                        onLogout()
+                    }) {
+                        Label("ログアウト", systemImage: "rectangle.portrait.and.arrow.right")
+                    }
+                    .accessibilityLabel("ログアウト")
+                }
             }
             .navigationTitle("メニュー")
             .navigationBarTitleDisplayMode(.inline)

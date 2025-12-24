@@ -2,6 +2,7 @@ import SwiftUI
 
 struct RootView: View {
     @EnvironmentObject var authViewModel: AuthenticationViewModel
+    @StateObject private var colorSchemeManager = ColorSchemeManager.shared
     @State private var isValidatingSession = true
 
     var body: some View {
@@ -20,6 +21,7 @@ struct RootView: View {
             }
         }
         .animation(.easeInOut, value: authViewModel.isAuthenticated)
+        .preferredColorScheme(colorSchemeManager.preference.colorScheme)
         .task {
             await validateSession()
         }
