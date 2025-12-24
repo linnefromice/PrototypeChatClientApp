@@ -2,6 +2,7 @@ import SwiftUI
 
 /// アカウント情報表示画面
 struct AccountProfileView: View {
+    @StateObject private var colorSchemeManager = ColorSchemeManager.shared
     let user: User
 
     var body: some View {
@@ -19,6 +20,7 @@ struct AccountProfileView: View {
         }
         .navigationTitle("アカウント")
         .navigationBarTitleDisplayMode(.inline)
+        .preferredColorScheme(colorSchemeManager.preference.colorScheme)
     }
 
     private var avatarSection: some View {

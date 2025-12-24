@@ -60,6 +60,7 @@ struct NavigationMenuView: View {
                 dismiss()
             })
         }
+        .preferredColorScheme(colorSchemeManager.preference.colorScheme)
     }
 }
 
