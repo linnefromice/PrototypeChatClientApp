@@ -107,13 +107,13 @@ public struct AppButton: View {
     // MARK: - Computed Properties
 
     private var backgroundColor: Color {
-        guard isEnabled else { return App.Color.Neutral._300 }
+        guard isEnabled else { return App.Color.Neutral.gray300 }
 
         switch style {
         case .primary:
             return App.Color.Brand.primary
         case .secondary:
-            return App.Color.Neutral._200
+            return App.Color.Neutral.gray200
         case .tertiary:
             return .clear
         case .destructive:

@@ -54,15 +54,15 @@ struct AppColorPreview: View {
             }
 
             Section("Neutral Scale") {
-                ColorRow(name: "100 (Lightest)", color: App.Color.Neutral._100)
-                ColorRow(name: "200", color: App.Color.Neutral._200)
-                ColorRow(name: "300", color: App.Color.Neutral._300)
-                ColorRow(name: "400", color: App.Color.Neutral._400)
-                ColorRow(name: "500", color: App.Color.Neutral._500)
-                ColorRow(name: "600", color: App.Color.Neutral._600)
-                ColorRow(name: "700", color: App.Color.Neutral._700)
-                ColorRow(name: "800", color: App.Color.Neutral._800)
-                ColorRow(name: "900 (Darkest)", color: App.Color.Neutral._900)
+                ColorRow(name: "Gray 100", color: App.Color.Neutral.gray100)
+                ColorRow(name: "Gray 200", color: App.Color.Neutral.gray200)
+                ColorRow(name: "Gray 300", color: App.Color.Neutral.gray300)
+                ColorRow(name: "Gray 600", color: App.Color.Neutral.gray600)
+                ColorRow(name: "Gray 900", color: App.Color.Neutral.gray900)
+                ColorRow(name: "Gray 1000", color: App.Color.Neutral.gray1000)
+                ColorRow(name: "White 100", color: App.Color.Neutral.white100)
+                ColorRow(name: "White 500", color: App.Color.Neutral.white500)
+                ColorRow(name: "White 1000", color: App.Color.Neutral.white1000)
             }
 
             Section("Semantic Colors") {
@@ -73,9 +73,9 @@ struct AppColorPreview: View {
             }
 
             Section("Text Colors") {
-                ColorRow(name: "Primary", color: App.Color.Text.primary)
-                ColorRow(name: "Secondary", color: App.Color.Text.secondary)
-                ColorRow(name: "Tertiary", color: App.Color.Text.tertiary)
+                ColorRow(name: "Primary", color: App.Color.Text.Default.primary)
+                ColorRow(name: "Secondary", color: App.Color.Text.Default.secondary)
+                ColorRow(name: "Tertiary", color: App.Color.Text.Default.tertiary)
             }
 
             Section("Background Colors") {
@@ -106,7 +106,7 @@ struct ColorRow: View {
                 Text(name)
                     .appText(.body)
                 Text("App.Color.\(inferPath())")
-                    .appText(.caption1, color: App.Color.Text.secondary)
+                    .appText(.caption1, color: App.Color.Text.Default.secondary)
                     .font(.system(.caption, design: .monospaced))
             }
         }
@@ -204,10 +204,10 @@ struct TypographyRow: View {
         VStack(alignment: .leading, spacing: App.Spacing.xs) {
             HStack {
                 Text(label)
-                    .appText(.caption1, color: App.Color.Text.secondary)
+                    .appText(.caption1, color: App.Color.Text.Default.secondary)
                 Spacer()
                 Text(".appText(.\(String(describing: style)))")
-                    .appText(.caption2, color: App.Color.Text.tertiary)
+                    .appText(.caption2, color: App.Color.Text.Default.tertiary)
                     .font(.system(.caption2, design: .monospaced))
             }
 
@@ -268,7 +268,7 @@ struct SpacingRow: View {
                 .frame(width: 120, alignment: .leading)
 
             Text("\(Int(value))pt")
-                .appText(.caption1, color: App.Color.Text.secondary)
+                .appText(.caption1, color: App.Color.Text.Default.secondary)
                 .frame(width: 40, alignment: .trailing)
 
             Rectangle()
@@ -290,7 +290,7 @@ struct RadiusRow: View {
                 .frame(width: 120, alignment: .leading)
 
             Text("\(value == 9999 ? "full" : "\(Int(value))pt")")
-                .appText(.caption1, color: App.Color.Text.secondary)
+                .appText(.caption1, color: App.Color.Text.Default.secondary)
                 .frame(width: 40, alignment: .trailing)
 
             RoundedRectangle(cornerRadius: min(value, 20))
@@ -320,7 +320,7 @@ struct AppComponentPreview: View {
                     AppButton("Disabled Button", isEnabled: false) {}
 
                     Text("Button Sizes")
-                        .appText(.subheadline, color: App.Color.Text.secondary)
+                        .appText(.subheadline, color: App.Color.Text.Default.secondary)
                         .padding(.top, App.Spacing.sm)
 
                     AppButton("Small", size: .small) {}
@@ -340,7 +340,7 @@ struct AppComponentPreview: View {
                             Text("Default Card")
                                 .appText(.headline)
                             Text("This is a card component with default styling.")
-                                .appText(.body, color: App.Color.Text.secondary)
+                                .appText(.body, color: App.Color.Text.Default.secondary)
                         }
                     }
 
@@ -356,7 +356,7 @@ struct AppComponentPreview: View {
                                 Text("Featured Card")
                                     .appText(.headline, color: App.Color.Brand.primary)
                                 Text("Custom styled with large radius and shadow")
-                                    .appText(.callout, color: App.Color.Text.secondary)
+                                    .appText(.callout, color: App.Color.Text.Default.secondary)
                             }
                         }
                     }
@@ -371,13 +371,13 @@ struct AppComponentPreview: View {
 
                     VStack(alignment: .leading, spacing: App.Spacing.sm) {
                         Text("Using .appCard() Modifier")
-                            .appText(.subheadline, color: App.Color.Text.secondary)
+                            .appText(.subheadline, color: App.Color.Text.Default.secondary)
 
                         VStack(alignment: .leading) {
                             Text("Card via Modifier")
                                 .appText(.headline)
                             Text("Applied using .appCard() modifier")
-                                .appText(.body, color: App.Color.Text.secondary)
+                                .appText(.body, color: App.Color.Text.Default.secondary)
                         }
                         .padding(App.Spacing.md)
                         .appCard()

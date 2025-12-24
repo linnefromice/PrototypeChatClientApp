@@ -39,7 +39,7 @@ extension App {
         /// Small shadow: Subtle elevation
         /// - Use for: Slight lift, hovering elements
         public static let sm = Shadow(
-            color: App.Color.Neutral._900.opacity(0.1),
+            color: App.Color.Fill.Shadow.black200,
             radius: 2,
             x: 0,
             y: 1
@@ -48,7 +48,7 @@ extension App {
         /// Medium shadow: Standard cards
         /// - Use for: Cards, panels, default elevation
         public static let md = Shadow(
-            color: App.Color.Neutral._900.opacity(0.1),
+            color: App.Color.Fill.Shadow.black400,
             radius: 4,
             x: 0,
             y: 2
@@ -57,7 +57,7 @@ extension App {
         /// Large shadow: Prominent elevation
         /// - Use for: Modals, popovers, high importance
         public static let lg = Shadow(
-            color: App.Color.Neutral._900.opacity(0.15),
+            color: App.Color.Fill.Shadow.black500,
             radius: 8,
             x: 0,
             y: 4

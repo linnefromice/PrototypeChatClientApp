@@ -52,7 +52,7 @@ extension View {
     /// ```
     public func appText(
         _ typography: App.Typography,
-        color: SwiftUI.Color = App.Color.Text.primary
+        color: SwiftUI.Color = App.Color.Text.Default.primary
     ) -> some View {
         self.modifier(AppTextStyleModifier(typography: typography, color: color))
     }

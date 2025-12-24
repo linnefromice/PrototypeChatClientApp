@@ -20,7 +20,7 @@ import SwiftUI
 ///         Text("Card Title")
 ///             .appText(.headline)
 ///         Text("Card content")
-///             .appText(.body, color: App.Color.Text.secondary)
+///             .appText(.body, color: App.Color.Text.Default.secondary)
 ///     }
 /// }
 /// ```
@@ -80,7 +80,7 @@ struct AppCard_Previews: PreviewProvider {
                     Text("Welcome")
                         .appText(.headline)
                     Text("This is a card component with default styling.")
-                        .appText(.body, color: App.Color.Text.secondary)
+                        .appText(.body, color: App.Color.Text.Default.secondary)
                 }
             }
             .padding()
@@ -101,7 +101,7 @@ struct AppCard_Previews: PreviewProvider {
                         Text("Featured")
                             .appText(.headline, color: App.Color.Brand.primary)
                         Text("Custom styled card")
-                            .appText(.callout, color: App.Color.Text.secondary)
+                            .appText(.callout, color: App.Color.Text.Default.secondary)
                     }
                 }
             }
@@ -136,7 +136,7 @@ struct AppCard_Previews: PreviewProvider {
                     Text("Dark Mode Card")
                         .appText(.headline)
                     Text("Automatically adapts to dark mode.")
-                        .appText(.body, color: App.Color.Text.secondary)
+                        .appText(.body, color: App.Color.Text.Default.secondary)
                 }
             }
             .padding()
