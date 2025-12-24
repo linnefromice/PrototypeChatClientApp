@@ -31,7 +31,7 @@ extension UIColor {
     }
 }
 
-// MARK: - Black Scale (Organic Dark - Charcoal instead of pure black)
+// MARK: - Black Scale (Organic Deep - Warm Charcoal/Deep Moss)
 
 extension UIColor {
     public static let black100 = black1000.withAlphaComponent(0.05)
@@ -43,28 +43,31 @@ extension UIColor {
     public static let black700 = black1000.withAlphaComponent(0.85)
     public static let black800 = black1000.withAlphaComponent(0.9)
     public static let black900 = black1000.withAlphaComponent(0.95)
-    public static let black1000 = hex(0x444444) // Soft charcoal - natural & warm
+    public static let black1000 = hex(0x191A16) // Deep warm charcoal (森の影)
+
+    /// Text-specific black for better readability
+    public static let textBlack = hex(0x2B2926) // Soft Ink Black (墨色)
 }
 
-// MARK: - Gray Scale (Warm grays with red/yellow undertones)
+// MARK: - Gray Scale (Stone/Sand - Earthy Neutrals)
 
 extension UIColor {
-    public static let gray100 = hex(0xf5f5f0) // Warm off-white
-    public static let gray200 = hex(0xe8e8e0) // Warm light gray
-    public static let gray300 = hex(0xc8c8c0) // Warm medium-light gray
-    public static let gray400 = hex(0xa0a098) // Warm medium gray
+    public static let gray100 = hex(0xF2F2EB) // Warm pebble (温かみのある小石色)
+    public static let gray200 = hex(0xE6E6DE) // Light sand
+    public static let gray300 = hex(0xD1D1C7) // Sand (砂色)
+    public static let gray400 = hex(0xB0B0A6) // Stone (石色)
     public static let gray50010 = gray500100.withAlphaComponent(0.1)
     public static let gray50030 = gray500100.withAlphaComponent(0.3)
     public static let gray50050 = gray500100.withAlphaComponent(0.5)
-    public static let gray500100 = hex(0x808078) // Warm mid-tone gray
-    public static let gray600 = hex(0x686860) // Warm dark-medium gray
-    public static let gray700 = hex(0x545450) // Warm dark gray
-    public static let gray800 = hex(0x484844) // Warm very dark gray
-    public static let gray900 = hex(0x3c3c38) // Warm charcoal
-    public static let gray1000 = hex(0x2c2c28) // Warm deep charcoal
+    public static let gray500100 = hex(0x8C8C82) // Warm gray (暖かいグレー)
+    public static let gray600 = hex(0x6E6E66) // Medium stone
+    public static let gray700 = hex(0x52524B) // Dark stone
+    public static let gray800 = hex(0x3B3B36) // Deep earth
+    public static let gray900 = hex(0x28281F) // Very deep earth
+    public static let gray1000 = hex(0x1E1E18) // Deepest earth tone
 }
 
-// MARK: - White Scale
+// MARK: - White Scale (Natural Canvas - Ivory/Cream)
 
 extension UIColor {
     public static let white100 = white1000.withAlphaComponent(0.05)
@@ -76,7 +79,11 @@ extension UIColor {
     public static let white700 = white1000.withAlphaComponent(0.85)
     public static let white800 = white1000.withAlphaComponent(0.9)
     public static let white900 = white1000.withAlphaComponent(0.95)
-    public static let white1000 = hex(0xffffff)
+    public static let white1000 = hex(0xFAFAF6) // Base Background (生成り色 - natural ivory)
+
+    /// Variations for layered backgrounds
+    public static let white950 = hex(0xF4F4EF) // Slightly warmer ivory
+    public static let white850 = hex(0xEBEBE6) // Light cream
 }
 
 // MARK: - System Colors (Semantic)
@@ -175,16 +182,16 @@ extension UIColor {
     public static let brandSecondaryDark = hex(0x33691E)  // Dark mode: deep moss
 
     // Chat-specific Backgrounds
-    public static let chatBackgroundLight = hex(0xF9FAF5) // Light mode: ivory white (paper-like)
-    public static let chatBackgroundDark = hex(0x1C1C1E)  // Dark mode: iOS standard dark
+    public static let chatBackgroundLight = hex(0xFAFAF6) // Light mode: same as main background (生成り色)
+    public static let chatBackgroundDark = hex(0x191A16)  // Dark mode: deep warm charcoal (森の影)
 
     // Other User's Message Bubble
-    public static let otherBubbleLight = hex(0xF0F2EE) // Light mode: warm gray
-    public static let otherBubbleDark = hex(0x2C2C2E)  // Dark mode: sepia dark
+    public static let otherBubbleLight = hex(0xEBEBE6) // Light mode: light cream (他者の吹き出し)
+    public static let otherBubbleDark = hex(0x28281F)  // Dark mode: very deep earth
 
     // Text Colors - Body Text
-    public static let textBodyLight = hex(0x444444) // Light mode: soft charcoal
-    public static let textBodyDark = hex(0xE0E0E0)  // Dark mode: off-white
+    public static let textBodyLight = hex(0x2B2926) // Light mode: soft ink black (墨色)
+    public static let textBodyDark = hex(0xE8E8DE)  // Dark mode: warm off-white (生成り色)
 }
 
 // MARK: - Special/Legacy Colors
