@@ -15,15 +15,12 @@ struct ReactionSummaryView: View {
                     HStack(spacing: 4) {
                         Text(summary.emoji)
                         Text("\(summary.count)")
-                            .font(.caption)
+                            .appText(.caption2, color: summary.hasUser(currentUserId) ? App.Color.Text.Default.inversion : App.Color.Text.Default.primary)
                     }
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
                     .background(
-                        summary.hasUser(currentUserId) ? Color.blue : Color.gray.opacity(0.2)
-                    )
-                    .foregroundColor(
-                        summary.hasUser(currentUserId) ? .white : .primary
+                        summary.hasUser(currentUserId) ? App.Color.Brand.primary : App.Color.Fill.Default.secondary
                     )
                     .clipShape(Capsule())
                 }

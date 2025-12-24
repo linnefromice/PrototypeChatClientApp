@@ -39,15 +39,13 @@ struct AuthenticationPresenter: View {
                 VStack(spacing: 8) {
                     Image(systemName: "message.fill")
                         .font(.system(size: 60))
-                        .foregroundColor(.blue)
+                        .foregroundColor(App.Color.Brand.primary)
 
                     Text("チャットアプリ")
-                        .font(.title)
-                        .fontWeight(.bold)
+                        .appText(.title1)
 
                     Text("開発用認証")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                        .appText(.caption2, color: App.Color.Text.Default.secondary)
                 }
                 .padding(.top, 60)
 
@@ -58,8 +56,7 @@ struct AuthenticationPresenter: View {
                     // Username field
                     VStack(alignment: .leading, spacing: 8) {
                         Text("ユーザー名")
-                            .font(.subheadline)
-                            .fontWeight(.medium)
+                            .appText(.subheadline)
 
                         TextField("ユーザー名を入力", text: $viewModel.username)
                             .textFieldStyle(.roundedBorder)
@@ -71,8 +68,7 @@ struct AuthenticationPresenter: View {
                     // Password field
                     VStack(alignment: .leading, spacing: 8) {
                         Text("パスワード")
-                            .font(.subheadline)
-                            .fontWeight(.medium)
+                            .appText(.subheadline)
 
                         HStack {
                             if viewModel.isPasswordVisible {
@@ -103,7 +99,7 @@ struct AuthenticationPresenter: View {
                                 viewModel.togglePasswordVisibility()
                             } label: {
                                 Image(systemName: viewModel.isPasswordVisible ? "eye.slash.fill" : "eye.fill")
-                                    .foregroundColor(.gray)
+                                    .foregroundColor(App.Color.Icon.Default.secondary)
                                     .frame(width: 44, height: 44)
                             }
                             .disabled(viewModel.isAuthenticating)
@@ -116,13 +112,12 @@ struct AuthenticationPresenter: View {
                             Image(systemName: "exclamationmark.triangle.fill")
                             Text(errorMessage)
                         }
-                        .font(.caption)
-                        .foregroundColor(.red)
+                        .appText(.caption2, color: App.Color.Semantic.error)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)
                         .background(
                             RoundedRectangle(cornerRadius: 8)
-                                .fill(Color.red.opacity(0.1))
+                                .fill(App.Color.Semantic.error.opacity(0.1))
                         )
                     }
 
@@ -135,14 +130,14 @@ struct AuthenticationPresenter: View {
                         HStack {
                             if viewModel.isAuthenticating {
                                 ProgressView()
-                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                    .progressViewStyle(CircularProgressViewStyle(tint: App.Color.Text.Default.inversion))
                             }
                             Text(viewModel.isAuthenticating ? "ログイン中..." : "ログイン")
                         }
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(Color.blue)
-                        .foregroundColor(.white)
+                        .background(App.Color.Brand.primary)
+                        .foregroundColor(App.Color.Text.Default.inversion)
                         .cornerRadius(10)
                     }
                     .disabled(viewModel.username.isEmpty || viewModel.password.isEmpty || viewModel.isAuthenticating)
@@ -152,8 +147,7 @@ struct AuthenticationPresenter: View {
                         viewModel.toggleRegistrationMode()
                     } label: {
                         Text("アカウントをお持ちでない方はこちら")
-                            .font(.subheadline)
-                            .foregroundColor(.blue)
+                            .appText(.subheadline, color: App.Color.Text.Link.primaryActive)
                     }
                     .disabled(viewModel.isAuthenticating)
                 }
@@ -165,12 +159,10 @@ struct AuthenticationPresenter: View {
                 #if DEBUG
                 VStack(spacing: 4) {
                     Text("開発環境")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
+                        .appText(.caption2, color: App.Color.Text.Default.secondary)
 
                     Text("テストユーザー: alice, bob, charlie")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
+                        .appText(.caption2, color: App.Color.Text.Default.secondary)
                 }
                 .padding(.bottom, 16)
                 #endif
