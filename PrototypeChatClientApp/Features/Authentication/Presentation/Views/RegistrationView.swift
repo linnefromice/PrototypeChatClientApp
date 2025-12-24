@@ -14,8 +14,7 @@ struct RegistrationView: View {
                         .foregroundColor(App.Color.Brand.primary)
 
                     Text("新規アカウント登録")
-                        .font(.title2)
-                        .fontWeight(.bold)
+                        .appText(.title2)
                 }
                 .padding(.top, 40)
 
@@ -24,8 +23,7 @@ struct RegistrationView: View {
                     // Username field
                     VStack(alignment: .leading, spacing: 8) {
                         Text("ユーザー名 *")
-                            .font(.subheadline)
-                            .fontWeight(.medium)
+                            .appText(.subheadline)
 
                         TextField("ユーザー名を入力", text: $viewModel.username)
                             .textFieldStyle(.roundedBorder)
@@ -34,15 +32,13 @@ struct RegistrationView: View {
                             .disabled(viewModel.isAuthenticating)
 
                         Text("3-20文字の英数字、アンダースコア、ハイフン")
-                            .font(.caption)
-                            .foregroundColor(App.Color.Text.Default.secondary)
+                            .appText(.caption2, color: App.Color.Text.Default.secondary)
                     }
 
                     // Email field
                     VStack(alignment: .leading, spacing: 8) {
                         Text("メールアドレス *")
-                            .font(.subheadline)
-                            .fontWeight(.medium)
+                            .appText(.subheadline)
 
                         TextField("メールアドレスを入力", text: $viewModel.email)
                             .textFieldStyle(.roundedBorder)
@@ -55,8 +51,7 @@ struct RegistrationView: View {
                     // Password field
                     VStack(alignment: .leading, spacing: 8) {
                         Text("パスワード *")
-                            .font(.subheadline)
-                            .fontWeight(.medium)
+                            .appText(.subheadline)
 
                         HStack {
                             if viewModel.isPasswordVisible {
@@ -84,23 +79,20 @@ struct RegistrationView: View {
                         }
 
                         Text("8文字以上")
-                            .font(.caption)
-                            .foregroundColor(App.Color.Text.Default.secondary)
+                            .appText(.caption2, color: App.Color.Text.Default.secondary)
                     }
 
                     // Name field
                     VStack(alignment: .leading, spacing: 8) {
                         Text("表示名 *")
-                            .font(.subheadline)
-                            .fontWeight(.medium)
+                            .appText(.subheadline)
 
                         TextField("表示名を入力", text: $viewModel.name)
                             .textFieldStyle(.roundedBorder)
                             .disabled(viewModel.isAuthenticating)
 
                         Text("チャットで表示される名前（1-50文字）")
-                            .font(.caption)
-                            .foregroundColor(App.Color.Text.Default.secondary)
+                            .appText(.caption2, color: App.Color.Text.Default.secondary)
                     }
 
                     // エラーメッセージ
@@ -109,8 +101,7 @@ struct RegistrationView: View {
                             Image(systemName: "exclamationmark.triangle.fill")
                             Text(errorMessage)
                         }
-                        .font(.caption)
-                        .foregroundColor(App.Color.Semantic.error)
+                        .appText(.caption2, color: App.Color.Semantic.error)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)
                         .background(
@@ -145,8 +136,7 @@ struct RegistrationView: View {
                         viewModel.toggleRegistrationMode()
                     } label: {
                         Text("既にアカウントをお持ちの方はこちら")
-                            .font(.subheadline)
-                            .foregroundColor(App.Color.Text.Link.primaryActive)
+                            .appText(.subheadline, color: App.Color.Text.Link.primaryActive)
                     }
                     .disabled(viewModel.isAuthenticating)
                 }

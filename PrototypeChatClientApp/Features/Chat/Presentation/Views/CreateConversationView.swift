@@ -35,8 +35,7 @@ struct CreateConversationView: View {
 
                         if !viewModel.selectedUserIds.isEmpty {
                             Text("\(viewModel.selectedUserIds.count)人選択中")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
+                                .appText(.caption2, color: App.Color.Text.Default.secondary)
                                 .padding(.horizontal)
                         }
                     }
@@ -106,12 +105,10 @@ struct CreateConversationView: View {
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(user.name)
-                            .font(.headline)
-                            .foregroundStyle(.primary)
+                            .appText(.headline)
 
                         Text("@\(user.idAlias)")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .appText(.caption2, color: App.Color.Text.Default.secondary)
                     }
 
                     Spacer()
@@ -121,15 +118,15 @@ struct CreateConversationView: View {
                     case .direct:
                         if viewModel.selectedUserId == user.id {
                             Image(systemName: "checkmark.circle.fill")
-                                .foregroundStyle(.blue)
+                                .foregroundStyle(App.Color.Brand.primary)
                         }
                     case .group:
                         if viewModel.selectedUserIds.contains(user.id) {
                             Image(systemName: "checkmark.circle.fill")
-                                .foregroundStyle(.blue)
+                                .foregroundStyle(App.Color.Brand.primary)
                         } else {
                             Image(systemName: "circle")
-                                .foregroundStyle(.gray)
+                                .foregroundStyle(App.Color.Icon.Default.secondary)
                         }
                     }
                 }

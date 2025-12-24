@@ -22,12 +22,12 @@ struct MessageInputView: View {
                 }
             }
             .disabled(!canSend)
-            .foregroundColor(canSend ? .blue : .gray)
+            .foregroundColor(canSend ? App.Color.Brand.primary : App.Color.Icon.Default.disable)
             .accessibilityLabel("送信")
         }
         .padding(.horizontal)
         .padding(.vertical, 8)
-        .background(Color(.systemBackground))
+        .background(App.Color.Fill.Default.primaryStrong)
     }
 }
 

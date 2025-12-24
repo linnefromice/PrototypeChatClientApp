@@ -20,15 +20,14 @@ struct MessageBubbleView: View {
             VStack(alignment: isOwnMessage ? .trailing : .leading, spacing: 4) {
                 if !isOwnMessage, let senderName = senderName {
                     Text(senderName)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                        .appText(.caption2, color: App.Color.Text.Default.secondary)
                 }
 
                 Text(message.text ?? "")
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
-                    .background(isOwnMessage ? Color.blue : Color(.systemGray5))
-                    .foregroundColor(isOwnMessage ? .white : .primary)
+                    .background(isOwnMessage ? App.Color.Brand.primary : App.Color.Fill.Default.secondary)
+                    .foregroundColor(isOwnMessage ? App.Color.Text.Default.inversion : App.Color.Text.Default.primary)
                     .cornerRadius(16)
                     .onLongPressGesture {
                         if onAddReaction != nil {
@@ -39,7 +38,7 @@ struct MessageBubbleView: View {
                         if let onAddReaction = onAddReaction {
                             VStack(spacing: 16) {
                                 Text("リアクションを選択")
-                                    .font(.headline)
+                                    .appText(.headline)
                                     .padding(.top)
 
                                 ReactionPickerView(onSelect: { emoji in
@@ -68,8 +67,7 @@ struct MessageBubbleView: View {
                 }
 
                 Text(formattedTime)
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
+                    .appText(.caption2, color: App.Color.Text.Default.secondary)
             }
             .frame(maxWidth: UIScreen.main.bounds.width * 0.7, alignment: isOwnMessage ? .trailing : .leading)
 

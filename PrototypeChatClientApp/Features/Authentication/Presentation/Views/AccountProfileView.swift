@@ -29,7 +29,7 @@ struct AccountProfileView: View {
             avatarView
             Spacer()
         }
-        .listRowBackground(Color.clear)
+        .listRowBackground(App.Color.Fill.Default.primaryStrong)
     }
 
     @ViewBuilder

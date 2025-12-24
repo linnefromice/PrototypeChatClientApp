@@ -98,11 +98,10 @@ struct ConversationListView: View {
     private func conversationRow(for detail: ConversationDetail) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(viewModel.conversationTitle(for: detail))
-                .font(.headline)
+                .appText(.headline)
 
             Text(viewModel.conversationSubtitle(for: detail))
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .appText(.caption2, color: App.Color.Text.Default.secondary)
         }
         .padding(.vertical, 4)
     }
