@@ -81,9 +81,10 @@ extension App {
         public struct Text {
             /// Default text color tokens
             public struct Default {
-                /// Primary text (highest contrast)
+                /// Primary text (highest contrast) - Body text
+                /// Uses soft charcoal in light mode, off-white in dark mode
                 public static let primary = SwiftUI.Color.dynamicColor(
-                    dark: .white1000, light: .gray1000)
+                    dark: .textBodyDark, light: .textBodyLight)
 
                 /// Secondary text (medium contrast)
                 public static let secondary = SwiftUI.Color.dynamicColor(
@@ -253,9 +254,11 @@ extension App {
                 public static let primaryLight = SwiftUI.Color.dynamicColor(
                     dark: .gray900, light: .white400)
 
-                /// Secondary fill
+                /// Secondary fill - Now using warm gray for chat bubbles
+                /// Light: #F0F2EE (warm gray for other user bubbles)
+                /// Dark: #2C2C2E (sepia dark)
                 public static let secondary = SwiftUI.Color.dynamicColor(
-                    dark: .gray1000, light: .gray50010)
+                    dark: .otherBubbleDark, light: .otherBubbleLight)
 
                 /// Tertiary fill
                 public static let tertiary = SwiftUI.Color.dynamicColor(
@@ -287,6 +290,21 @@ extension App {
                 /// Light danger fill
                 public static let dangerLight = SwiftUI.Color.dynamicColor(
                     dark: .systemRed10, light: .systemRed10)
+            }
+
+            /// Chat-specific fill color tokens
+            public struct Chat {
+                /// Chat background - Natural, paper-like ivory white
+                /// Light: #F9FAF5 (ivory white, like natural paper)
+                /// Dark: #1C1C1E (iOS standard dark)
+                public static let background = SwiftUI.Color.dynamicColor(
+                    dark: .chatBackgroundDark, light: .chatBackgroundLight)
+
+                /// Other user's message bubble background
+                /// Light: #F0F2EE (warm gray)
+                /// Dark: #2C2C2E (sepia dark)
+                public static let otherBubble = SwiftUI.Color.dynamicColor(
+                    dark: .otherBubbleDark, light: .otherBubbleLight)
             }
 
             /// Light fill color tokens (adaptive)
@@ -441,14 +459,23 @@ extension App {
             public static let white100 = SwiftUI.Color.constantColor(.white100)
         }
 
-        // MARK: - Legacy Brand Colors (for backward compatibility)
+        // MARK: - Brand Colors (Sunny Sprout - Yellow-Green Theme)
 
-        /// Brand colors (temporary - for current implementation)
+        /// Brand colors based on "陽だまりの若草 (Sunny Sprout)" concept
         ///
-        /// TODO: Replace with proper brand color definitions from design team
+        /// Natural, warm, organic yellow-green theme that conveys warmth and positivity
         public enum Brand {
-            public static let primary = SwiftUI.Color(red: 0/255, green: 102/255, blue: 204/255) // #0066CC
-            public static let secondary = SwiftUI.Color(red: 102/255, green: 51/255, blue: 153/255) // #663399
+            /// Primary brand color - Young Grass (若草色)
+            /// Light: #8BC34A (vibrant young grass)
+            /// Dark: #9CCC65 (slightly brighter, lower saturation)
+            public static let primary = SwiftUI.Color.dynamicColor(
+                dark: .brandPrimaryDark, light: .brandPrimaryLight)
+
+            /// Secondary brand color - Pale/Deep Grass
+            /// Light: #DCEDC8 (pale young grass)
+            /// Dark: #33691E (deep moss)
+            public static let secondary = SwiftUI.Color.dynamicColor(
+                dark: .brandSecondaryDark, light: .brandSecondaryLight)
         }
 
         // MARK: - Legacy Semantic Colors (for backward compatibility)

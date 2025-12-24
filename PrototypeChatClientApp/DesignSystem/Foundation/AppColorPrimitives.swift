@@ -31,7 +31,7 @@ extension UIColor {
     }
 }
 
-// MARK: - Black Scale
+// MARK: - Black Scale (Organic Dark - Charcoal instead of pure black)
 
 extension UIColor {
     public static let black100 = black1000.withAlphaComponent(0.05)
@@ -43,25 +43,25 @@ extension UIColor {
     public static let black700 = black1000.withAlphaComponent(0.85)
     public static let black800 = black1000.withAlphaComponent(0.9)
     public static let black900 = black1000.withAlphaComponent(0.95)
-    public static let black1000 = hex(0x161213)
+    public static let black1000 = hex(0x444444) // Soft charcoal - natural & warm
 }
 
-// MARK: - Gray Scale
+// MARK: - Gray Scale (Warm grays with red/yellow undertones)
 
 extension UIColor {
-    public static let gray100 = hex(0xefefef)
-    public static let gray200 = hex(0xdcdcdc)
-    public static let gray300 = hex(0xbdbdbd)
-    public static let gray400 = hex(0x989898)
+    public static let gray100 = hex(0xf5f5f0) // Warm off-white
+    public static let gray200 = hex(0xe8e8e0) // Warm light gray
+    public static let gray300 = hex(0xc8c8c0) // Warm medium-light gray
+    public static let gray400 = hex(0xa0a098) // Warm medium gray
     public static let gray50010 = gray500100.withAlphaComponent(0.1)
     public static let gray50030 = gray500100.withAlphaComponent(0.3)
     public static let gray50050 = gray500100.withAlphaComponent(0.5)
-    public static let gray500100 = hex(0x7c7c7c)
-    public static let gray600 = hex(0x656565)
-    public static let gray700 = hex(0x525252)
-    public static let gray800 = hex(0x464646)
-    public static let gray900 = hex(0x3d3d3d)
-    public static let gray1000 = hex(0x292929)
+    public static let gray500100 = hex(0x808078) // Warm mid-tone gray
+    public static let gray600 = hex(0x686860) // Warm dark-medium gray
+    public static let gray700 = hex(0x545450) // Warm dark gray
+    public static let gray800 = hex(0x484844) // Warm very dark gray
+    public static let gray900 = hex(0x3c3c38) // Warm charcoal
+    public static let gray1000 = hex(0x2c2c28) // Warm deep charcoal
 }
 
 // MARK: - White Scale
@@ -163,7 +163,31 @@ extension UIColor {
     public static let systemPink10 = systemPink100.withAlphaComponent(0.1)
 }
 
-// MARK: - Brand/Special Colors
+// MARK: - Brand Colors (Sunny Sprout - Yellow-Green Theme)
+
+extension UIColor {
+    // Primary Brand - Young Grass (若草色)
+    public static let brandPrimaryLight = hex(0x8BC34A) // Light mode: vibrant young grass
+    public static let brandPrimaryDark = hex(0x9CCC65)  // Dark mode: slightly brighter, lower saturation
+
+    // Secondary Brand - Pale/Deep Grass
+    public static let brandSecondaryLight = hex(0xDCEDC8) // Light mode: pale young grass
+    public static let brandSecondaryDark = hex(0x33691E)  // Dark mode: deep moss
+
+    // Chat-specific Backgrounds
+    public static let chatBackgroundLight = hex(0xF9FAF5) // Light mode: ivory white (paper-like)
+    public static let chatBackgroundDark = hex(0x1C1C1E)  // Dark mode: iOS standard dark
+
+    // Other User's Message Bubble
+    public static let otherBubbleLight = hex(0xF0F2EE) // Light mode: warm gray
+    public static let otherBubbleDark = hex(0x2C2C2E)  // Dark mode: sepia dark
+
+    // Text Colors - Body Text
+    public static let textBodyLight = hex(0x444444) // Light mode: soft charcoal
+    public static let textBodyDark = hex(0xE0E0E0)  // Dark mode: off-white
+}
+
+// MARK: - Special/Legacy Colors
 
 extension UIColor {
     /// Diamond/Premium color
