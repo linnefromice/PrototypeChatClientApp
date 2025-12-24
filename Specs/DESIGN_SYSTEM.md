@@ -8,9 +8,9 @@
 
 This document defines the design system for PrototypeChatClientApp. After evaluating three implementation approaches, we have selected **Trial 3: Hybrid + Gradual Migration** as the optimal strategy.
 
-### Selected Approach: Hybrid Model
+### Selected Approach: Code-Based Design System
 
-- **Colors**: Asset Catalog (native dark mode support)
+- **Colors**: Hex-based with dynamic light/dark mode support + Gradient support
 - **Typography, Spacing, Radius, Shadow**: Code-based tokens
 - **Components**: SwiftUI Views + ViewModifiers
 - **Migration**: Gradual, non-breaking adoption
@@ -18,10 +18,12 @@ This document defines the design system for PrototypeChatClientApp. After evalua
 ### Key Benefits
 
 1. ✅ **Non-breaking**: Coexists with existing code during migration
-2. ✅ **Dark mode**: Automatic support via Asset Catalog
+2. ✅ **Dark mode**: Automatic support via `dynamicColor(dark:light:)`
 3. ✅ **Type-safe**: Compile-time checks prevent magic values
-4. ✅ **Extensible**: Easy to add new tokens and components
-5. ✅ **Documented**: Comprehensive guides for developers
+4. ✅ **Extensible**: Easy to add new tokens, gradients, and components
+5. ✅ **Hex-based**: Direct color definitions without Asset Catalog dependency
+6. ✅ **Gradient support**: Built-in gradient definitions with dark mode awareness
+7. ✅ **Documented**: Comprehensive guides for developers
 
 ## Architecture
 
@@ -44,91 +46,179 @@ This document defines the design system for PrototypeChatClientApp. After evalua
 
 All design system symbols are prefixed with `App` to prevent naming conflicts during migration:
 
-- Asset Catalog: `App_Brand_Primary.colorset`
-- Swift Code: `App.Color.Brand.primary`
+- Swift Code: `App.Color.Text.Default.primary`, `App.Gradient.brand`
+- Color Primitives: `UIColor.gray1000`, `UIColor.systemRed100`
 - Components: `AppButton`, `AppTextField`
 - Modifiers: `.appText()`, `.appCard()`
 
 ## Foundation Tokens
 
-### 1. Colors (Asset Catalog)
+### 1. Colors (Hex-Based Code)
 
-#### Color Palette
+#### Color System Architecture
 
-**Brand Colors**
-- `App_Brand_Primary`: Primary brand color (with light/dark variants)
-- `App_Brand_Secondary`: Secondary brand color
+The color system uses three layers:
 
-**Neutral Scale** (100 = lightest, 900 = darkest)
-- `App_Neutral_100` through `App_Neutral_900`
-- Used for backgrounds, borders, disabled states
+1. **Color Primitives** (`AppColorPrimitives.swift`): UIColor extensions with hex definitions
+2. **Semantic Colors** (`AppColor.swift`): Usage-based organization (Text, Icon, Stroke, Fill)
+3. **Color Helpers**: `hex()`, `dynamicColor()`, `constantColor()` for flexible color creation
 
-**Semantic Colors**
-- `App_Semantic_Success`: Green (positive actions, success states)
-- `App_Semantic_Error`: Red (errors, destructive actions)
-- `App_Semantic_Warning`: Orange/Yellow (warnings, cautions)
-- `App_Semantic_Info`: Blue (informational messages)
+#### Color Helpers
+
+```swift
+// Create color from hex value
+let brandColor = Color.hex(0x0066CC)
+
+// Create adaptive color (light/dark mode)
+let adaptiveText = Color.dynamicColor(
+    dark: .white1000,
+    light: .gray1000
+)
+
+// Create constant color (no adaptation)
+let brandRed = Color.constantColor(.systemRed100)
+```
+
+#### Semantic Color Organization
+
+**Text Colors** - `App.Color.Text.*`
+- `Default.primary`: Highest contrast text
+- `Default.secondary`: Medium contrast text
+- `Default.tertiary`: Low contrast text
+- `Link.primaryActive`: Active link color
+- `Function.rewards`: Rewards-specific text
+
+**Icon Colors** - `App.Color.Icon.*`
+- `Default.primary`, `Default.secondary`, `Default.tertiary`
+- `Function.rewards`, `Function.coin`
+
+**Stroke/Border Colors** - `App.Color.Stroke.*`
+- `Default.primary`, `Default.secondary`, `Default.border`
+- `Highlight.primary`, `Highlight.button`
+- `Danger.primary`, `Danger.secondary`
+
+**Fill/Background Colors** - `App.Color.Fill.*`
+- `Default.primaryStrong`, `Default.primaryLight`
+- `Light.white1000`, `Light.white500`
+- `Shadow.black800`, `Shadow.black500` (for shadows)
+- `Function.rewardsPrimary`, `Function.coinPrimary`
+
+**Neutral Colors** (Direct Access) - `App.Color.Neutral.*`
+- `black1000`, `black700`, `black400`, `black100`
+- `gray1000` through `gray100`
+- `white1000` through `white100`
+
+**Legacy Colors** (Backward Compatibility)
+- `Brand.primary`, `Brand.secondary`
+- `Semantic.success`, `Semantic.error`, `Semantic.warning`, `Semantic.info`
 
 #### Swift API
 
 ```swift
-// Usage
+// Semantic colors (recommended)
 Text("Hello")
-    .foregroundColor(App.Color.Brand.primary)
+    .foregroundColor(App.Color.Text.Default.primary)
 
 VStack {
     // ...
 }
-.background(App.Color.Background.base)
+.background(App.Color.Fill.Default.primaryStrong)
+
+// Neutral colors (direct access)
+Rectangle()
+    .fill(App.Color.Neutral.gray900)
+
+// Hex colors (for custom colors)
+Circle()
+    .fill(Color.hex(0xFF3D00))
 ```
 
-#### Color Token Definition
+#### Color Primitives (UIColor)
+
+All semantic colors are built on top of UIColor primitives:
 
 ```swift
-extension App {
-    public enum Color {
-        public enum Brand {
-            public static let primary = SwiftUI.Color("App_Brand_Primary")
-            public static let secondary = SwiftUI.Color("App_Brand_Secondary")
-        }
+// Black scale
+UIColor.black1000  // hex(0x161213)
+UIColor.black100   // black1000.withAlphaComponent(0.05)
 
-        public enum Neutral {
-            public static let _100 = SwiftUI.Color("App_Neutral_100")
-            public static let _200 = SwiftUI.Color("App_Neutral_200")
-            public static let _300 = SwiftUI.Color("App_Neutral_300")
-            public static let _400 = SwiftUI.Color("App_Neutral_400")
-            public static let _500 = SwiftUI.Color("App_Neutral_500")
-            public static let _600 = SwiftUI.Color("App_Neutral_600")
-            public static let _700 = SwiftUI.Color("App_Neutral_700")
-            public static let _800 = SwiftUI.Color("App_Neutral_800")
-            public static let _900 = SwiftUI.Color("App_Neutral_900")
-        }
+// Gray scale
+UIColor.gray1000   // hex(0x292929)
+UIColor.gray900    // hex(0x3d3d3d)
+UIColor.gray100    // hex(0xefefef)
 
-        public enum Semantic {
-            public static let success = SwiftUI.Color("App_Semantic_Success")
-            public static let error = SwiftUI.Color("App_Semantic_Error")
-            public static let warning = SwiftUI.Color("App_Semantic_Warning")
-            public static let info = SwiftUI.Color("App_Semantic_Info")
-        }
+// System colors
+UIColor.systemRed100     // hex(0xff3d00)
+UIColor.systemOrange100  // hex(0xffbb0c)
+UIColor.systemGreen100   // hex(0x56e100)
+UIColor.systemPurple100  // hex(0x8256ff)
+// ... and more
+```
 
-        // Semantic aliases for common use cases
-        public enum Text {
-            public static let primary = Neutral._900
-            public static let secondary = Neutral._600
-            public static let tertiary = Neutral._400
-            public static let inverse = Neutral._100
-        }
+### 2. Gradients (Code)
 
-        public enum Background {
-            public static let base = Neutral._100
-            public static let elevated = SwiftUI.Color.white
-            public static let overlay = Neutral._900.opacity(0.5)
-        }
-    }
+#### Gradient Definitions
+
+The design system includes pre-defined gradients with automatic dark mode support:
+
+**Brand Gradients**
+```swift
+// Fixed brand gradient
+App.Gradient.brand
+// LinearGradient: blue to purple
+
+// Adaptive background gradient
+App.Gradient.brandBackground(colorScheme: colorScheme)
+```
+
+**Functional Gradients**
+```swift
+App.Gradient.reward   // Magenta to purple
+App.Gradient.coin     // Orange to yellow
+App.Gradient.success  // Green variants
+App.Gradient.error    // Red variants
+```
+
+**Utility Gradients**
+```swift
+// Shimmer effect (for loading states)
+App.Gradient.shimmer(colorScheme: colorScheme)
+
+// Glassmorphism overlay
+App.Gradient.glass(colorScheme: colorScheme)
+
+// Scrim overlay (fade to black/white)
+App.Gradient.scrim(
+    colorScheme: colorScheme,
+    direction: .bottom
+)
+```
+
+#### Swift API
+
+```swift
+// Using pre-defined gradients
+Rectangle()
+    .fill(App.Gradient.brand)
+
+// Using adaptive gradients
+@Environment(\.colorScheme) var colorScheme
+
+VStack {
+    // ...
+}
+.background(App.Gradient.brandBackground(colorScheme: colorScheme))
+
+// Using gradient background modifier
+VStack {
+    // ...
+}
+.gradientBackground { colorScheme in
+    App.Gradient.shimmer(colorScheme: colorScheme)
 }
 ```
 
-### 2. Typography (Code)
+### 3. Typography (Code)
 
 #### Type Scale
 
@@ -157,7 +247,7 @@ Text("Custom")
     .font(App.Typography.body.font)
 ```
 
-### 3. Spacing (Code)
+### 4. Spacing (Code)
 
 8-point grid system for consistent spacing:
 
@@ -183,7 +273,7 @@ VStack(spacing: App.Spacing.md) {
 .padding(App.Spacing.lg)
 ```
 
-### 4. Corner Radius (Code)
+### 5. Corner Radius (Code)
 
 | Token | Value | Use Case |
 |-------|-------|----------|
@@ -201,7 +291,7 @@ VStack(spacing: App.Spacing.md) {
 RoundedRectangle(cornerRadius: App.Radius.lg)
 ```
 
-### 5. Shadow (Code)
+### 6. Shadow (Code)
 
 | Token | Radius | Offset | Opacity | Use Case |
 |-------|--------|--------|---------|----------|
@@ -251,7 +341,7 @@ public struct AppTextStyleModifier: ViewModifier {
 extension View {
     public func appText(
         _ typography: App.Typography,
-        color: Color = App.Color.Text.primary
+        color: Color = App.Color.Text.Default.primary
     ) -> some View {
         modifier(AppTextStyleModifier(typography: typography, color: color))
     }
@@ -322,7 +412,7 @@ AppCard {
         Text("Card Title")
             .appText(.headline)
         Text("Card content goes here")
-            .appText(.body, color: App.Color.Text.secondary)
+            .appText(.body, color: App.Color.Text.Default.secondary)
     }
 }
 ```
@@ -342,12 +432,14 @@ AppCard {
 PrototypeChatClientApp/
 ├── DesignSystem/
 │   ├── Foundation/
-│   │   ├── AppFoundation.swift      # Namespace: public enum App {}
-│   │   ├── AppColor.swift           # App.Color extensions
-│   │   ├── AppTypography.swift      # App.Typography enum
-│   │   ├── AppSpacing.swift         # App.Spacing constants
-│   │   ├── AppRadius.swift          # App.Radius constants
-│   │   └── AppShadow.swift          # App.Shadow definitions
+│   │   ├── AppFoundation.swift       # Namespace: public enum App {}
+│   │   ├── AppColorPrimitives.swift  # UIColor hex extensions
+│   │   ├── AppColor.swift            # Semantic color organization
+│   │   ├── AppGradient.swift         # Gradient definitions
+│   │   ├── AppTypography.swift       # App.Typography enum
+│   │   ├── AppSpacing.swift          # App.Spacing constants
+│   │   ├── AppRadius.swift           # App.Radius constants
+│   │   └── AppShadow.swift           # App.Shadow definitions
 │   ├── Modifiers/
 │   │   ├── AppTextStyleModifier.swift
 │   │   └── AppCardModifier.swift
@@ -356,12 +448,6 @@ PrototypeChatClientApp/
 │   │   └── AppCard.swift
 │   └── Preview/
 │       └── AppPreview.swift
-└── Assets.xcassets/
-    └── DesignSystem/
-        └── Colors/
-            ├── Brand/
-            ├── Neutral/
-            └── Semantic/
 ```
 
 ## Implementation Phases
@@ -369,11 +455,14 @@ PrototypeChatClientApp/
 ### Phase 1: Foundation (This Prototype)
 
 **Scope:**
-1. ✅ Asset Catalog: 2 brand colors, 9 neutral colors, 4 semantic colors
-2. ✅ Swift tokens: Color, Typography, Spacing, Radius, Shadow
-3. ✅ Modifiers: `.appText()`, `.appCard()`
-4. ✅ Components: `AppButton`, `AppCard`
-5. ✅ Preview views for all tokens and components
+1. ✅ Hex-based color system with 50+ primitive colors
+2. ✅ Semantic color organization (Text, Icon, Stroke, Fill)
+3. ✅ Dynamic light/dark mode support via `dynamicColor()`
+4. ✅ Gradient definitions with dark mode awareness
+5. ✅ Swift tokens: Typography, Spacing, Radius, Shadow
+6. ✅ Modifiers: `.appText()`, `.appCard()`, `.gradientBackground()`
+7. ✅ Components: `AppButton`, `AppCard`
+8. ✅ Preview views for all tokens and components
 
 **Deliverables:**
 - Compilable, functional design system
@@ -385,7 +474,8 @@ PrototypeChatClientApp/
 - Additional components (TextField, Toast, Alert)
 - Animation tokens
 - Accessibility enhancements
-- SwiftGen integration for auto-generated color wrappers
+- Additional gradient patterns (radial, angular)
+- Color palette generator utilities
 
 ### Phase 3: Migration (Future)
 
@@ -400,9 +490,9 @@ PrototypeChatClientApp/
 
 **✅ DO:**
 ```swift
-// Use design system tokens
+// Use semantic colors
 Text("Welcome")
-    .appText(.headline, color: App.Color.Brand.primary)
+    .appText(.headline, color: App.Color.Text.Default.primary)
 
 AppButton("Submit", style: .primary) { }
 
@@ -410,6 +500,11 @@ VStack(spacing: App.Spacing.md) {
     // ...
 }
 .padding(App.Spacing.lg)
+.background(App.Color.Fill.Default.primaryStrong)
+
+// Use gradients
+Rectangle()
+    .fill(App.Gradient.brand)
 ```
 
 **❌ DON'T:**
@@ -444,11 +539,20 @@ Migrate existing code during:
 
 ### Automatic Support
 
-All colors defined in Asset Catalog include light and dark variants:
+All colors use `dynamicColor(dark:light:)` for automatic dark mode adaptation:
 
-- `App_Brand_Primary.colorset`: Separate colors for Light/Dark appearance
-- `App_Neutral_100.colorset`: Inverts in dark mode (100 becomes 900, etc.)
-- Components automatically adapt with no code changes
+- **Dynamic Colors**: Automatically switch based on system appearance
+  ```swift
+  Color.dynamicColor(dark: .white1000, light: .gray1000)
+  ```
+- **Constant Colors**: Stay the same regardless of appearance mode
+  ```swift
+  Color.constantColor(.systemRed100)
+  ```
+- **Gradients**: Include colorScheme parameter for dark mode variants
+  ```swift
+  App.Gradient.shimmer(colorScheme: colorScheme)
+  ```
 
 ### Testing Dark Mode
 
@@ -495,7 +599,13 @@ Test token values:
 ```swift
 func testColorTokens() {
     XCTAssertNotNil(App.Color.Brand.primary)
-    XCTAssertNotNil(App.Color.Neutral._500)
+    XCTAssertNotNil(App.Color.Neutral.gray900)
+    XCTAssertNotNil(App.Color.Text.Default.primary)
+}
+
+func testGradientTokens() {
+    XCTAssertNotNil(App.Gradient.brand)
+    XCTAssertNotNil(App.Gradient.reward)
 }
 ```
 
@@ -515,11 +625,12 @@ Use Xcode Previews or snapshot tests to catch unintended visual changes.
 
 ## Performance Considerations
 
-### Asset Catalog
+### Hex-Based Colors
 
 - ✅ Colors are resolved at compile-time
 - ✅ Minimal runtime overhead
-- ✅ Automatic memory management
+- ✅ No Asset Catalog dependency
+- ✅ Direct hex values for transparency
 
 ### Component Reuse
 
@@ -531,7 +642,8 @@ Use Xcode Previews or snapshot tests to catch unintended visual changes.
 
 When refactoring a screen to use the design system:
 
-- [ ] Replace hardcoded colors with `App.Color.*`
+- [ ] Replace hardcoded colors with semantic colors (`App.Color.Text.*`, `App.Color.Fill.*`)
+- [ ] Replace hardcoded gradients with `App.Gradient.*`
 - [ ] Replace hardcoded fonts with `.appText()`
 - [ ] Replace hardcoded spacing with `App.Spacing.*`
 - [ ] Replace custom buttons with `AppButton`

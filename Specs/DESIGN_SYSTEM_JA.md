@@ -8,9 +8,9 @@
 
 本ドキュメントは PrototypeChatClientApp のデザインシステムを定義します。3つの実装アプローチを評価した結果、**試行3: ハイブリッド + 段階的移行**を最適な戦略として選択しました。
 
-### 選択されたアプローチ: ハイブリッドモデル
+### 選択されたアプローチ: コードベースデザインシステム
 
-- **カラー**: Asset Catalog（ネイティブダークモード対応）
+- **カラー**: Hex ベース + 動的ライト/ダークモード対応 + グラデーション対応
 - **タイポグラフィ、スペーシング、角丸、シャドウ**: コードベースのトークン
 - **コンポーネント**: SwiftUI Views + ViewModifiers
 - **移行**: 段階的、非破壊的な導入
@@ -18,10 +18,12 @@
 ### 主な利点
 
 1. ✅ **非破壊的**: 移行期間中、既存コードと共存可能
-2. ✅ **ダークモード**: Asset Catalog による自動対応
+2. ✅ **ダークモード**: `dynamicColor(dark:light:)` による自動対応
 3. ✅ **型安全**: コンパイル時チェックによりマジックナンバーを防止
-4. ✅ **拡張性**: 新しいトークンとコンポーネントの追加が容易
-5. ✅ **ドキュメント化**: 開発者向けの包括的なガイド
+4. ✅ **拡張性**: 新しいトークン、グラデーション、コンポーネントの追加が容易
+5. ✅ **Hex ベース**: Asset Catalog 依存なしの直接的なカラー定義
+6. ✅ **グラデーション対応**: ダークモード対応の組み込みグラデーション定義
+7. ✅ **ドキュメント化**: 開発者向けの包括的なガイド
 
 ## アーキテクチャ
 
@@ -44,91 +46,179 @@
 
 移行期間中の命名競合を防ぐため、すべてのデザインシステムのシンボルには `App` プレフィックスを使用します：
 
-- Asset Catalog: `App_Brand_Primary.colorset`
-- Swift コード: `App.Color.Brand.primary`
+- Swift コード: `App.Color.Text.Default.primary`, `App.Gradient.brand`
+- カラープリミティブ: `UIColor.gray1000`, `UIColor.systemRed100`
 - コンポーネント: `AppButton`, `AppTextField`
 - モディファイア: `.appText()`, `.appCard()`
 
 ## 基盤トークン
 
-### 1. カラー（Asset Catalog）
+### 1. カラー（Hex ベースコード）
 
-#### カラーパレット
+#### カラーシステムアーキテクチャ
 
-**ブランドカラー**
-- `App_Brand_Primary`: プライマリブランドカラー（ライト/ダークバリアント付き）
-- `App_Brand_Secondary`: セカンダリブランドカラー
+カラーシステムは3つの層で構成されています：
 
-**ニュートラルスケール**（100 = 最も明るい、900 = 最も暗い）
-- `App_Neutral_100` 〜 `App_Neutral_900`
-- 背景、ボーダー、無効状態に使用
+1. **カラープリミティブ** (`AppColorPrimitives.swift`): UIColor 拡張と hex 定義
+2. **セマンティックカラー** (`AppColor.swift`): 用途ベースの組織化（Text, Icon, Stroke, Fill）
+3. **カラーヘルパー**: `hex()`, `dynamicColor()`, `constantColor()` による柔軟なカラー作成
 
-**セマンティックカラー**
-- `App_Semantic_Success`: 緑（肯定的なアクション、成功状態）
-- `App_Semantic_Error`: 赤（エラー、破壊的なアクション）
-- `App_Semantic_Warning`: オレンジ/イエロー（警告、注意）
-- `App_Semantic_Info`: 青（情報メッセージ）
+#### カラーヘルパー
+
+```swift
+// hex 値からカラーを作成
+let brandColor = Color.hex(0x0066CC)
+
+// 適応的カラーを作成（ライト/ダークモード）
+let adaptiveText = Color.dynamicColor(
+    dark: .white1000,
+    light: .gray1000
+)
+
+// 定数カラーを作成（適応なし）
+let brandRed = Color.constantColor(.systemRed100)
+```
+
+#### セマンティックカラー構成
+
+**テキストカラー** - `App.Color.Text.*`
+- `Default.primary`: 最高コントラストテキスト
+- `Default.secondary`: 中コントラストテキスト
+- `Default.tertiary`: 低コントラストテキスト
+- `Link.primaryActive`: アクティブリンクカラー
+- `Function.rewards`: リワード専用テキスト
+
+**アイコンカラー** - `App.Color.Icon.*`
+- `Default.primary`, `Default.secondary`, `Default.tertiary`
+- `Function.rewards`, `Function.coin`
+
+**ストローク/ボーダーカラー** - `App.Color.Stroke.*`
+- `Default.primary`, `Default.secondary`, `Default.border`
+- `Highlight.primary`, `Highlight.button`
+- `Danger.primary`, `Danger.secondary`
+
+**塗りつぶし/背景カラー** - `App.Color.Fill.*`
+- `Default.primaryStrong`, `Default.primaryLight`
+- `Light.white1000`, `Light.white500`
+- `Shadow.black800`, `Shadow.black500`（シャドウ用）
+- `Function.rewardsPrimary`, `Function.coinPrimary`
+
+**ニュートラルカラー**（直接アクセス） - `App.Color.Neutral.*`
+- `black1000`, `black700`, `black400`, `black100`
+- `gray1000` ～ `gray100`
+- `white1000` ～ `white100`
+
+**レガシーカラー**（後方互換性）
+- `Brand.primary`, `Brand.secondary`
+- `Semantic.success`, `Semantic.error`, `Semantic.warning`, `Semantic.info`
 
 #### Swift API
 
 ```swift
-// 使用例
+// セマンティックカラー（推奨）
 Text("Hello")
-    .foregroundColor(App.Color.Brand.primary)
+    .foregroundColor(App.Color.Text.Default.primary)
 
 VStack {
     // ...
 }
-.background(App.Color.Background.base)
+.background(App.Color.Fill.Default.primaryStrong)
+
+// ニュートラルカラー（直接アクセス）
+Rectangle()
+    .fill(App.Color.Neutral.gray900)
+
+// Hex カラー（カスタムカラー用）
+Circle()
+    .fill(Color.hex(0xFF3D00))
 ```
 
-#### カラートークン定義
+#### カラープリミティブ（UIColor）
+
+すべてのセマンティックカラーは UIColor プリミティブの上に構築されています：
 
 ```swift
-extension App {
-    public enum Color {
-        public enum Brand {
-            public static let primary = SwiftUI.Color("App_Brand_Primary")
-            public static let secondary = SwiftUI.Color("App_Brand_Secondary")
-        }
+// Black スケール
+UIColor.black1000  // hex(0x161213)
+UIColor.black100   // black1000.withAlphaComponent(0.05)
 
-        public enum Neutral {
-            public static let _100 = SwiftUI.Color("App_Neutral_100")
-            public static let _200 = SwiftUI.Color("App_Neutral_200")
-            public static let _300 = SwiftUI.Color("App_Neutral_300")
-            public static let _400 = SwiftUI.Color("App_Neutral_400")
-            public static let _500 = SwiftUI.Color("App_Neutral_500")
-            public static let _600 = SwiftUI.Color("App_Neutral_600")
-            public static let _700 = SwiftUI.Color("App_Neutral_700")
-            public static let _800 = SwiftUI.Color("App_Neutral_800")
-            public static let _900 = SwiftUI.Color("App_Neutral_900")
-        }
+// Gray スケール
+UIColor.gray1000   // hex(0x292929)
+UIColor.gray900    // hex(0x3d3d3d)
+UIColor.gray100    // hex(0xefefef)
 
-        public enum Semantic {
-            public static let success = SwiftUI.Color("App_Semantic_Success")
-            public static let error = SwiftUI.Color("App_Semantic_Error")
-            public static let warning = SwiftUI.Color("App_Semantic_Warning")
-            public static let info = SwiftUI.Color("App_Semantic_Info")
-        }
+// システムカラー
+UIColor.systemRed100     // hex(0xff3d00)
+UIColor.systemOrange100  // hex(0xffbb0c)
+UIColor.systemGreen100   // hex(0x56e100)
+UIColor.systemPurple100  // hex(0x8256ff)
+// ... その他多数
+```
 
-        // 一般的なユースケースのためのセマンティックエイリアス
-        public enum Text {
-            public static let primary = Neutral._900
-            public static let secondary = Neutral._600
-            public static let tertiary = Neutral._400
-            public static let inverse = Neutral._100
-        }
+### 2. グラデーション（コード）
 
-        public enum Background {
-            public static let base = Neutral._100
-            public static let elevated = SwiftUI.Color.white
-            public static let overlay = Neutral._900.opacity(0.5)
-        }
-    }
+#### グラデーション定義
+
+デザインシステムには、ダークモード自動対応の事前定義されたグラデーションが含まれています：
+
+**ブランドグラデーション**
+```swift
+// 固定ブランドグラデーション
+App.Gradient.brand
+// LinearGradient: 青から紫へ
+
+// 適応的背景グラデーション
+App.Gradient.brandBackground(colorScheme: colorScheme)
+```
+
+**機能的グラデーション**
+```swift
+App.Gradient.reward   // マゼンタから紫へ
+App.Gradient.coin     // オレンジから黄色へ
+App.Gradient.success  // 緑のバリエーション
+App.Gradient.error    // 赤のバリエーション
+```
+
+**ユーティリティグラデーション**
+```swift
+// シマーエフェクト（ローディング状態用）
+App.Gradient.shimmer(colorScheme: colorScheme)
+
+// グラスモーフィズムオーバーレイ
+App.Gradient.glass(colorScheme: colorScheme)
+
+// スクリムオーバーレイ（黒/白へフェード）
+App.Gradient.scrim(
+    colorScheme: colorScheme,
+    direction: .bottom
+)
+```
+
+#### Swift API
+
+```swift
+// 事前定義グラデーションの使用
+Rectangle()
+    .fill(App.Gradient.brand)
+
+// 適応的グラデーションの使用
+@Environment(\.colorScheme) var colorScheme
+
+VStack {
+    // ...
+}
+.background(App.Gradient.brandBackground(colorScheme: colorScheme))
+
+// グラデーション背景モディファイアの使用
+VStack {
+    // ...
+}
+.gradientBackground { colorScheme in
+    App.Gradient.shimmer(colorScheme: colorScheme)
 }
 ```
 
-### 2. タイポグラフィ（コード）
+### 3. タイポグラフィ（コード）
 
 #### タイプスケール
 
@@ -157,7 +247,7 @@ Text("Custom")
     .font(App.Typography.body.font)
 ```
 
-### 3. スペーシング（コード）
+### 4. スペーシング（コード）
 
 一貫したスペーシングのための8ポイントグリッドシステム：
 
@@ -183,7 +273,7 @@ VStack(spacing: App.Spacing.md) {
 .padding(App.Spacing.lg)
 ```
 
-### 4. 角丸（コード）
+### 5. 角丸（コード）
 
 | トークン | 値 | ユースケース |
 |-------|------|----------|
@@ -201,7 +291,7 @@ VStack(spacing: App.Spacing.md) {
 RoundedRectangle(cornerRadius: App.Radius.lg)
 ```
 
-### 5. シャドウ（コード）
+### 6. シャドウ（コード）
 
 | トークン | 半径 | オフセット | 不透明度 | ユースケース |
 |-------|------|----------|---------|----------|
@@ -251,7 +341,7 @@ public struct AppTextStyleModifier: ViewModifier {
 extension View {
     public func appText(
         _ typography: App.Typography,
-        color: Color = App.Color.Text.primary
+        color: Color = App.Color.Text.Default.primary
     ) -> some View {
         modifier(AppTextStyleModifier(typography: typography, color: color))
     }
@@ -322,7 +412,7 @@ AppCard {
         Text("Card Title")
             .appText(.headline)
         Text("Card content goes here")
-            .appText(.body, color: App.Color.Text.secondary)
+            .appText(.body, color: App.Color.Text.Default.secondary)
     }
 }
 ```
@@ -342,12 +432,14 @@ AppCard {
 PrototypeChatClientApp/
 ├── DesignSystem/
 │   ├── Foundation/
-│   │   ├── AppFoundation.swift      # 名前空間: public enum App {}
-│   │   ├── AppColor.swift           # App.Color 拡張
-│   │   ├── AppTypography.swift      # App.Typography enum
-│   │   ├── AppSpacing.swift         # App.Spacing 定数
-│   │   ├── AppRadius.swift          # App.Radius 定数
-│   │   └── AppShadow.swift          # App.Shadow 定義
+│   │   ├── AppFoundation.swift       # 名前空間: public enum App {}
+│   │   ├── AppColorPrimitives.swift  # UIColor hex 拡張
+│   │   ├── AppColor.swift            # セマンティックカラー構成
+│   │   ├── AppGradient.swift         # グラデーション定義
+│   │   ├── AppTypography.swift       # App.Typography enum
+│   │   ├── AppSpacing.swift          # App.Spacing 定数
+│   │   ├── AppRadius.swift           # App.Radius 定数
+│   │   └── AppShadow.swift           # App.Shadow 定義
 │   ├── Modifiers/
 │   │   ├── AppTextStyleModifier.swift
 │   │   └── AppCardModifier.swift
@@ -356,12 +448,6 @@ PrototypeChatClientApp/
 │   │   └── AppCard.swift
 │   └── Preview/
 │       └── AppPreview.swift
-└── Assets.xcassets/
-    └── DesignSystem/
-        └── Colors/
-            ├── Brand/
-            ├── Neutral/
-            └── Semantic/
 ```
 
 ## 実装フェーズ
@@ -369,11 +455,14 @@ PrototypeChatClientApp/
 ### フェーズ1: 基盤（本プロトタイプ）
 
 **範囲:**
-1. ✅ Asset Catalog: ブランドカラー2色、ニュートラルカラー9色、セマンティックカラー4色
-2. ✅ Swift トークン: Color, Typography, Spacing, Radius, Shadow
-3. ✅ モディファイア: `.appText()`, `.appCard()`
-4. ✅ コンポーネント: `AppButton`, `AppCard`
-5. ✅ すべてのトークンとコンポーネントのプレビュー
+1. ✅ 50種類以上のプリミティブカラーを持つ Hex ベースカラーシステム
+2. ✅ セマンティックカラー構成（Text, Icon, Stroke, Fill）
+3. ✅ `dynamicColor()` による動的ライト/ダークモード対応
+4. ✅ ダークモード対応のグラデーション定義
+5. ✅ Swift トークン: Typography, Spacing, Radius, Shadow
+6. ✅ モディファイア: `.appText()`, `.appCard()`, `.gradientBackground()`
+7. ✅ コンポーネント: `AppButton`, `AppCard`
+8. ✅ すべてのトークンとコンポーネントのプレビュー
 
 **成果物:**
 - コンパイル可能で機能的なデザインシステム
@@ -385,7 +474,8 @@ PrototypeChatClientApp/
 - 追加コンポーネント（TextField, Toast, Alert）
 - アニメーショントークン
 - アクセシビリティ強化
-- 自動生成カラーラッパーのための SwiftGen 統合
+- 追加グラデーションパターン（放射状、角度）
+- カラーパレットジェネレーターユーティリティ
 
 ### フェーズ3: 移行（将来）
 
@@ -400,9 +490,9 @@ PrototypeChatClientApp/
 
 **✅ 推奨:**
 ```swift
-// デザインシステムトークンを使用
+// セマンティックカラーを使用
 Text("Welcome")
-    .appText(.headline, color: App.Color.Brand.primary)
+    .appText(.headline, color: App.Color.Text.Default.primary)
 
 AppButton("Submit", style: .primary) { }
 
@@ -410,6 +500,11 @@ VStack(spacing: App.Spacing.md) {
     // ...
 }
 .padding(App.Spacing.lg)
+.background(App.Color.Fill.Default.primaryStrong)
+
+// グラデーションを使用
+Rectangle()
+    .fill(App.Gradient.brand)
 ```
 
 **❌ 非推奨:**
@@ -444,11 +539,20 @@ Text("Legacy")
 
 ### 自動対応
 
-Asset Catalog で定義されたすべてのカラーにはライトとダークのバリアントが含まれます：
+すべてのカラーは `dynamicColor(dark:light:)` を使用して自動的にダークモード適応します：
 
-- `App_Brand_Primary.colorset`: Light/Dark アピアランス用の別々のカラー
-- `App_Neutral_100.colorset`: ダークモードで反転（100が900になる、など）
-- コンポーネントはコード変更なしで自動的に適応
+- **動的カラー**: システムアピアランスに基づいて自動的に切り替わる
+  ```swift
+  Color.dynamicColor(dark: .white1000, light: .gray1000)
+  ```
+- **定数カラー**: アピアランスモードに関係なく同じまま
+  ```swift
+  Color.constantColor(.systemRed100)
+  ```
+- **グラデーション**: ダークモードバリアント用の colorScheme パラメータを含む
+  ```swift
+  App.Gradient.shimmer(colorScheme: colorScheme)
+  ```
 
 ### ダークモードのテスト
 
@@ -495,7 +599,13 @@ AppButton("Submit", style: .primary) {
 ```swift
 func testColorTokens() {
     XCTAssertNotNil(App.Color.Brand.primary)
-    XCTAssertNotNil(App.Color.Neutral._500)
+    XCTAssertNotNil(App.Color.Neutral.gray900)
+    XCTAssertNotNil(App.Color.Text.Default.primary)
+}
+
+func testGradientTokens() {
+    XCTAssertNotNil(App.Gradient.brand)
+    XCTAssertNotNil(App.Gradient.reward)
 }
 ```
 
@@ -515,11 +625,12 @@ func testAppButtonStyles() {
 
 ## パフォーマンス考慮事項
 
-### Asset Catalog
+### Hex ベースカラー
 
 - ✅ カラーはコンパイル時に解決
 - ✅ 最小限のランタイムオーバーヘッド
-- ✅ 自動メモリ管理
+- ✅ Asset Catalog 依存なし
+- ✅ 透明性のための直接 hex 値
 
 ### コンポーネントの再利用
 
@@ -531,7 +642,8 @@ func testAppButtonStyles() {
 
 デザインシステムを使用するための画面リファクタリング時：
 
-- [ ] ハードコードされたカラーを `App.Color.*` に置換
+- [ ] ハードコードされたカラーをセマンティックカラー（`App.Color.Text.*`, `App.Color.Fill.*`）に置換
+- [ ] ハードコードされたグラデーションを `App.Gradient.*` に置換
 - [ ] ハードコードされたフォントを `.appText()` に置換
 - [ ] ハードコードされたスペーシングを `App.Spacing.*` に置換
 - [ ] カスタムボタンを `AppButton` に置換
