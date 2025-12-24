@@ -10,10 +10,10 @@ struct LoadingView: View {
                 .scaleEffect(1.5)
 
             Text(message)
-                .foregroundColor(.secondary)
+                .foregroundColor(App.Color.Text.Default.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(.systemBackground))
+        .background(App.Color.Fill.Default.primaryStrong)
     }
 }
 

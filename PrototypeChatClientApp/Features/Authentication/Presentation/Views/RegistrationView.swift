@@ -11,7 +11,7 @@ struct RegistrationView: View {
                 VStack(spacing: 8) {
                     Image(systemName: "person.badge.plus")
                         .font(.system(size: 60))
-                        .foregroundColor(.blue)
+                        .foregroundColor(App.Color.Brand.primary)
 
                     Text("新規アカウント登録")
                         .font(.title2)
@@ -35,7 +35,7 @@ struct RegistrationView: View {
 
                         Text("3-20文字の英数字、アンダースコア、ハイフン")
                             .font(.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(App.Color.Text.Default.secondary)
                     }
 
                     // Email field
@@ -77,7 +77,7 @@ struct RegistrationView: View {
                                 viewModel.togglePasswordVisibility()
                             } label: {
                                 Image(systemName: viewModel.isPasswordVisible ? "eye.slash.fill" : "eye.fill")
-                                    .foregroundColor(.gray)
+                                    .foregroundColor(App.Color.Icon.Default.secondary)
                                     .frame(width: 44, height: 44)
                             }
                             .disabled(viewModel.isAuthenticating)
@@ -85,7 +85,7 @@ struct RegistrationView: View {
 
                         Text("8文字以上")
                             .font(.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(App.Color.Text.Default.secondary)
                     }
 
                     // Name field
@@ -100,7 +100,7 @@ struct RegistrationView: View {
 
                         Text("チャットで表示される名前（1-50文字）")
                             .font(.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(App.Color.Text.Default.secondary)
                     }
 
                     // エラーメッセージ
@@ -110,12 +110,12 @@ struct RegistrationView: View {
                             Text(errorMessage)
                         }
                         .font(.caption)
-                        .foregroundColor(.red)
+                        .foregroundColor(App.Color.Semantic.error)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)
                         .background(
                             RoundedRectangle(cornerRadius: 8)
-                                .fill(Color.red.opacity(0.1))
+                                .fill(App.Color.Semantic.error.opacity(0.1))
                         )
                     }
 
@@ -128,14 +128,14 @@ struct RegistrationView: View {
                         HStack {
                             if viewModel.isAuthenticating {
                                 ProgressView()
-                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                    .progressViewStyle(CircularProgressViewStyle(tint: App.Color.Text.Default.inversion))
                             }
                             Text(viewModel.isAuthenticating ? "登録中..." : "登録")
                         }
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(isFormValid ? Color.blue : Color.gray)
-                        .foregroundColor(.white)
+                        .background(isFormValid ? App.Color.Brand.primary : App.Color.Icon.Default.disable)
+                        .foregroundColor(App.Color.Text.Default.inversion)
                         .cornerRadius(10)
                     }
                     .disabled(!isFormValid || viewModel.isAuthenticating)
@@ -146,7 +146,7 @@ struct RegistrationView: View {
                     } label: {
                         Text("既にアカウントをお持ちの方はこちら")
                             .font(.subheadline)
-                            .foregroundColor(.blue)
+                            .foregroundColor(App.Color.Text.Link.primaryActive)
                     }
                     .disabled(viewModel.isAuthenticating)
                 }

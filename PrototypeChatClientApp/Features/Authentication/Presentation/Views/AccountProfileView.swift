@@ -43,7 +43,7 @@ struct AccountProfileView: View {
                         .scaledToFill()
                         .frame(width: 80, height: 80)
                         .clipShape(Circle())
-                        .overlay(Circle().stroke(Color.secondary.opacity(0.3), lineWidth: 1))
+                        .overlay(Circle().stroke(App.Color.Stroke.Default.primary, lineWidth: 1))
                         .accessibilityLabel("プロフィール画像")
                 case .failure, .empty:
                     initialsPlaceholder
@@ -59,13 +59,13 @@ struct AccountProfileView: View {
     private var initialsPlaceholder: some View {
         ZStack {
             Circle()
-                .fill(Color.secondary.opacity(0.2))
+                .fill(App.Color.Fill.Default.secondary)
                 .frame(width: 80, height: 80)
-                .overlay(Circle().stroke(Color.secondary.opacity(0.3), lineWidth: 1))
+                .overlay(Circle().stroke(App.Color.Stroke.Default.primary, lineWidth: 1))
 
             Text(userInitial)
                 .font(.system(size: 36, weight: .medium))
-                .foregroundColor(.primary)
+                .foregroundColor(App.Color.Text.Default.primary)
         }
         .accessibilityLabel("\(user.name)のプロフィール画像")
     }
