@@ -8,7 +8,7 @@
 import SwiftUI
 
 @main
-struct PrototypeChatClientAppApp: App {
+struct PrototypeChatClientAppApp: SwiftUI.App {
     @StateObject private var container = DependencyContainer.shared
 
     init() {
